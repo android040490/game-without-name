@@ -1,5 +1,9 @@
-import * as THREE from "three";
+import { Vector3 } from "three";
 
 export class PositionComponent {
-  constructor(public position: THREE.Vector3) {}
+  public position: Vector3;
+
+  constructor(x: number, y: number, z: number) {
+    this.position = new Vector3(x, y, z);
+  }
 }
