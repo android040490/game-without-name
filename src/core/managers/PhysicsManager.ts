@@ -2,6 +2,7 @@ const RAPIER = await import("@dimforge/rapier3d");
 import {
   Collider,
   ColliderDesc,
+  KinematicCharacterController,
   RigidBody,
   RigidBodyDesc,
   World,
@@ -78,6 +79,10 @@ export class PhysicsManager {
 
   removeRigidBody(rigidBody: RigidBody): void {
     this._instance.removeRigidBody(rigidBody);
+  }
+
+  createCharacterController(offset: number): KinematicCharacterController {
+    return this._instance.createCharacterController(offset);
   }
 
   private createRigidBodyDesc(params: RigidBodyParams): RigidBodyDesc {
