@@ -6,10 +6,6 @@ import { RotationComponent } from "./core/components/RotationComponent";
 import { MeshConfigComponent } from "./core/components/MeshConfigComponent";
 import { TextureComponent } from "./core/components/TextureComponent";
 import { EnvironmentComponent } from "./core/components/EnvironmentComponent";
-import { ModelComponent } from "./core/components/ModelComponent";
-import { CharacterComponent } from "./core/components/CharacterComponent";
-import { TargetDirectionComponent } from "./core/components/TargetDirectionComponent";
-import { VelocityComponent } from "./core/components/VelocityComponent";
 
 const game = new Game(
   document.querySelector("canvas.webgl") as HTMLCanvasElement,
@@ -41,18 +37,6 @@ const createFloor = () => {
     }),
   );
   game.entityManager.addEntity(floorEntity);
-};
-
-// 3D Model Entity
-const create3DModel = () => {
-  const entity = new Entity();
-  entity.addComponent(new ModelComponent("models/animated-avatar.glb"));
-  entity.addComponent(new PositionComponent(0, 4, 0));
-  entity.addComponent(new RotationComponent(0, 0, 0, 1));
-  entity.addComponent(new CharacterComponent());
-  entity.addComponent(new VelocityComponent(6.5));
-  entity.addComponent(new TargetDirectionComponent(5, 0, 2));
-  game.entityManager.addEntity(entity);
 };
 
 // Mesh Entity
@@ -89,4 +73,3 @@ const createMesh = () => {
 createEnvironment();
 createFloor();
 createMesh();
-create3DModel();
