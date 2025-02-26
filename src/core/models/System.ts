@@ -7,7 +7,10 @@ export abstract class System {
 
   constructor(protected readonly game: Game) {}
 
-  public abstract appliesTo(entity: Entity): boolean;
+  appliesTo(_: Entity): boolean {
+    // should be overridden in a specific system if necessary
+    return false;
+  }
 
   addEntity(entity: Entity): void {
     this.entities.set(entity.id, entity);
@@ -17,7 +20,9 @@ export abstract class System {
     this.entities.delete(entity.id);
   }
 
-  update(): void {}
+  update(): void {
+    // should be overridden in a specific system if necessary
+  }
 
   //   public initialize(game: Game): void {
   //     // Intentionally left empty
