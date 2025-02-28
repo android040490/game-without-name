@@ -42,6 +42,7 @@ type RigidBodyType =
 
 interface RigidBodyParams {
   rigidBodyType: RigidBodyType;
+  lockRotation?: boolean;
 }
 
 export type PhysicalObjectParams = RigidBodyParams & ColliderParams;
@@ -86,7 +87,7 @@ export class PhysicsManager {
   }
 
   private createRigidBodyDesc(params: RigidBodyParams): RigidBodyDesc {
-    const { rigidBodyType } = params;
+    const { rigidBodyType, lockRotation } = params;
 
     let bodyDesc: RigidBodyDesc;
 
@@ -106,6 +107,10 @@ export class PhysicsManager {
       case "kinematicVelocityBased":
         bodyDesc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
         break;
+    }
+
+    if (lockRotation) {
+      bodyDesc.lockRotations();
     }
 
     return bodyDesc;
