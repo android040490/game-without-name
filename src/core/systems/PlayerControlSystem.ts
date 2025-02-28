@@ -34,24 +34,32 @@ export class PlayerControlSystem extends System {
     this.characterController.setApplyImpulsesToDynamicBodies(true);
     this.characterController.setMinSlopeSlideAngle((10 * Math.PI) / 180);
 
-    document.addEventListener("keydown", (e: KeyboardEvent) =>
-      this.handleKeyboardEvent(e),
-    );
-    document.addEventListener("keyup", (e: KeyboardEvent) =>
-      this.handleKeyboardEvent(e),
-    );
+    this.handleKeyboardEvent = this.handleKeyboardEvent.bind(this);
   }
 
   appliesTo(entity: Entity): boolean {
     return entity.hasComponents(
       PlayerComponent,
-      PhysicsComponent,
-      RotationComponent,
+      PhysicsComponent, // TODO: maybe to move the check for this component to the add entity method
+      RotationComponent, // TODO: maybe to move the check for this component to the add entity method
     );
   }
 
   addEntity(entity: Entity): void {
+    if (this.entities.size === 1) {
+      console.error(
+        "PlayerControlSystem: a game cannot have more than one entity with a PlayerComponent. Attempting to add an entity: ",
+        entity,
+      );
+      return;
+    }
     super.addEntity(entity);
+    this.setListeners();
+  }
+
+  removeEntity(entity: Entity): void {
+    super.removeEntity(entity);
+    this.removeListeners();
   }
 
   update(): void {
@@ -108,6 +116,16 @@ export class PlayerControlSystem extends System {
         true,
       );
     }
+  }
+
+  private setListeners(): void {
+    document.addEventListener("keydown", this.handleKeyboardEvent);
+    document.addEventListener("keyup", this.handleKeyboardEvent);
+  }
+
+  private removeListeners(): void {
+    document.removeEventListener("keydown", this.handleKeyboardEvent);
+    document.removeEventListener("keyup", this.handleKeyboardEvent);
   }
 
   private handleKeyboardEvent(event: KeyboardEvent): void {
