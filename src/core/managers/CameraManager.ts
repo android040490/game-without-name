@@ -9,6 +9,7 @@ export class CameraManager {
   private readonly windowSizeManager: WindowSizeManager;
   private readonly canvas: HTMLCanvasElement;
   private readonly eventBus: EventBus;
+  private readonly defaultCamera: THREE.PerspectiveCamera;
   private _camera!: THREE.PerspectiveCamera;
   private controls!: OrbitControls;
 
@@ -17,7 +18,11 @@ export class CameraManager {
     this.canvas = game.canvas;
     this.eventBus = eventBus;
 
-    this.setCamera();
+    this.defaultCamera = this.createPerspectiveCamera();
+    this.defaultCamera.position.set(0, 2, 15);
+    this.defaultCamera.lookAt(0, 0, 0);
+
+    this.setCamera(this.defaultCamera);
     this.setControls();
 
     this.resize = this.resize.bind(this);
@@ -40,20 +45,25 @@ export class CameraManager {
     this.controls.dispose();
   }
 
-  get camera(): THREE.Camera {
-    return this._camera;
+  resetToDefaultCamera(): void {
+    this._camera = this.defaultCamera;
   }
 
-  private setCamera(): void {
-    this._camera = new THREE.PerspectiveCamera(
+  createPerspectiveCamera(): THREE.PerspectiveCamera {
+    return new THREE.PerspectiveCamera(
       50,
       this.windowSizeManager.windowWidth / this.windowSizeManager.windowHeight,
       0.1,
       1000,
     );
+  }
 
-    this._camera.position.set(0, 2, 15);
-    this._camera.lookAt(0, 0, 0);
+  get camera(): THREE.Camera {
+    return this._camera;
+  }
+
+  setCamera(camera: THREE.PerspectiveCamera): void {
+    this._camera = camera;
   }
 
   private setControls(): void {
