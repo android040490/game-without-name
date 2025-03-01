@@ -3,26 +3,19 @@ import {
   KinematicCharacterController,
   RigidBody,
 } from "@dimforge/rapier3d";
-import { CharacterComponent } from "../components/CharacterComponent";
-import { TargetDirectionComponent } from "../components/TargetDirectionComponent";
+import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import * as THREE from "three";
-import { PositionComponent } from "../components/PositionComponent";
-import { RotationComponent } from "../components/RotationComponent";
-import { VelocityComponent } from "../components/VelocityComponent";
-import { TimeManager } from "../managers/TimeManager";
 
 export class CharacterMovementSystem extends System {
   private characterController: KinematicCharacterController;
-  private timeManager: TimeManager;
 
   constructor(game: Game) {
     super(game);
 
-    this.timeManager = game.timeManager;
     const physicsManager = game.physicsManager;
     let offset = 0.01;
     this.characterController = physicsManager.createCharacterController(offset);
@@ -32,63 +25,41 @@ export class CharacterMovementSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponents(CharacterComponent, PhysicsComponent);
+    return entity.hasComponents(CharacterMovementComponent, PhysicsComponent);
   }
 
   update(): void {
     for (const [_, entity] of this.entities) {
-      const { direction } = entity.getComponent(TargetDirectionComponent) ?? {};
-      const { position } = entity.getComponent(PositionComponent) ?? {};
-      const { rotation } = entity.getComponent(RotationComponent) ?? {};
-      const { velocity } = entity.getComponent(VelocityComponent) ?? {};
+      const { rotation, position } = entity.getComponent(
+        CharacterMovementComponent,
+      )!;
       const { collider, rigidBody } =
         entity.getComponent(PhysicsComponent) ?? {};
 
-      if (rigidBody && direction && position && rotation) {
-        this.rotateCharacter(rigidBody, direction, position, rotation);
+      if (rigidBody && rotation) {
+        this.rotateCharacter(rigidBody, rotation);
       }
-      if (rigidBody && collider && direction && position && velocity) {
-        this.moveCharacter(rigidBody, collider, direction, position, velocity);
+      if (rigidBody && collider && position) {
+        this.moveCharacter(rigidBody, collider, position);
       }
     }
   }
 
   private rotateCharacter(
     rigidBody: RigidBody,
-    targetDirection: THREE.Vector3,
-    position: THREE.Vector3,
     rotation: THREE.Quaternion,
   ): void {
-    const matrix = new THREE.Matrix4();
-    matrix.lookAt(targetDirection, position, new THREE.Vector3(0, 1, 0));
-
-    const targetQuaternion = new THREE.Quaternion().setFromRotationMatrix(
-      matrix,
-    );
-
-    const quaternion = rotation.clone().slerp(targetQuaternion, 0.05);
-
-    rigidBody.setRotation(
-      { x: 0, y: quaternion.y, z: 0, w: quaternion.w },
-      true,
-    );
+    rigidBody.setRotation({ x: 0, y: rotation.y, z: 0, w: rotation.w }, true); // TODO: update this
   }
 
   private moveCharacter(
     rigidBody: RigidBody,
     collider: Collider,
-    targetDirection: THREE.Vector3,
     position: THREE.Vector3,
-    velocity: number,
   ): void {
-    const direction = targetDirection.clone().sub(position).normalize();
-    const movement = direction.multiplyScalar(
-      (velocity * this.timeManager.delta) / 1000,
-    );
-
     this.characterController.computeColliderMovement(
       collider,
-      { x: movement.x, y: 0, z: movement.z }, // The collider we would like to move.
+      { x: position.x, y: 0, z: position.z }, // The collider we would like to move.
     );
 
     // Read the result.
@@ -98,13 +69,6 @@ export class CharacterMovementSystem extends System {
 
     const newPosition = prevPosition.add(correctedMovement);
 
-    rigidBody.setTranslation(
-      {
-        x: newPosition.x,
-        y: newPosition.y,
-        z: newPosition.z,
-      },
-      true,
-    );
+    rigidBody.setTranslation(newPosition, true);
   }
 }

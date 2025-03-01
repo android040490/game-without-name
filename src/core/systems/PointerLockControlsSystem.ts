@@ -1,10 +1,12 @@
 import { CameraComponent } from "../components/CameraComponent";
+import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { PointerLockControlsComponent } from "../components/PointerLockControlsComponent";
 import { Game } from "../Game";
 import { CameraManager } from "../managers/CameraManager";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 
+// TODO: maybe combine this with the player control system
 export class PointerLockControlsSystem extends System {
   private readonly cameraManager: CameraManager;
 
@@ -15,7 +17,7 @@ export class PointerLockControlsSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponent(PointerLockControlsComponent);
+    return entity.hasComponents(PointerLockControlsComponent, CameraComponent);
   }
 
   removeEntity(entity: Entity): void {
@@ -47,5 +49,17 @@ export class PointerLockControlsSystem extends System {
     document.addEventListener("click", () => {
       controlsComponent.controls?.lock();
     });
+  }
+
+  update(): void {
+    for (const [_, entity] of this.entities) {
+      const { camera } = entity.getComponent(CameraComponent)!;
+      const characterMovementComponent = entity.getComponent(
+        CharacterMovementComponent,
+      )!;
+
+      const rotation = camera.quaternion;
+      characterMovementComponent.rotation = rotation;
+    }
   }
 }
