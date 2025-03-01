@@ -7,9 +7,12 @@ import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { TimeManager } from "../managers/TimeManager";
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
+import { Collider, RigidBody } from "@dimforge/rapier3d";
+import { PhysicsManager } from "../managers/PhysicsManager";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
+  private readonly physicsManager: PhysicsManager;
   private readonly minSpeed = 0.3;
   private readonly maxSpeed = 1;
   private speed: number;
@@ -18,11 +21,13 @@ export class PlayerControlSystem extends System {
   private moveLeft = false;
   private moveBackward = false;
   private moveRight = false;
+  private jumpInitiated = false;
 
   constructor(game: Game) {
     super(game);
 
-    this.timeManager = this.game.timeManager;
+    this.timeManager = game.timeManager;
+    this.physicsManager = game.physicsManager;
     this.speed = this.minSpeed;
     this.velocity = new THREE.Vector3();
 
@@ -61,38 +66,78 @@ export class PlayerControlSystem extends System {
       const { rotation } = entity.getComponent(RotationComponent)!;
       const characterMovementComponent = entity.getComponent(
         CharacterMovementComponent,
-      );
+      )!;
 
-      if (!collider || !rigidBody || !characterMovementComponent) {
+      if (!collider || !rigidBody) {
         continue;
       }
 
-      const delta = this.timeManager.delta / 1000;
-      this.velocity.z -= this.velocity.z * 10.0 * delta;
-      this.velocity.x -= this.velocity.x * 10.0 * delta;
+      characterMovementComponent.position = this.computeNextMovement(rotation);
 
-      const direction = new THREE.Vector3();
-
-      direction.z = Number(this.moveBackward) - Number(this.moveForward);
-      direction.x = Number(this.moveRight) - Number(this.moveLeft);
-      direction.normalize(); // this ensures consistent movements in all directions
-
-      if (this.moveForward || this.moveBackward) {
-        this.velocity.z += direction.z * 2 * delta * this.speed;
+      if (this.jumpInitiated && this.detectGround(rigidBody, collider)) {
+        this.jump(rigidBody);
       }
-
-      if (this.moveLeft || this.moveRight) {
-        this.velocity.x += direction.x * 2 * delta * this.speed;
-      }
-
-      const movement = this.velocity
-        .clone()
-        .normalize()
-        .applyQuaternion(rotation)
-        .multiplyScalar(this.velocity.length());
-
-      characterMovementComponent.position = movement;
+      this.jumpInitiated = false;
     }
+  }
+
+  private jump(rigidBody: RigidBody): void {
+    rigidBody.applyImpulse(
+      {
+        x: 0,
+        y: 10,
+        z: 0,
+      },
+      true,
+    );
+  }
+
+  private detectGround(rigidBody: RigidBody, collider: Collider): boolean {
+    const position = rigidBody.translation();
+
+    const hit = this.physicsManager.castRay(
+      position,
+      {
+        x: 0.0,
+        y: -1,
+        z: 0.0,
+      },
+      1, // TODO: get half the height of the body so as not to have this value hardcoded
+      true,
+      undefined,
+      undefined,
+      collider,
+    );
+
+    return !!hit?.collider;
+  }
+
+  private computeNextMovement(
+    currentRotation: THREE.Quaternion,
+  ): THREE.Vector3 {
+    const delta = this.timeManager.delta / 1000;
+    this.velocity.z -= this.velocity.z * 10.0 * delta;
+    this.velocity.x -= this.velocity.x * 10.0 * delta;
+
+    const direction = new THREE.Vector3();
+
+    direction.z = Number(this.moveBackward) - Number(this.moveForward);
+    direction.x = Number(this.moveRight) - Number(this.moveLeft);
+    direction.normalize(); // this ensures consistent movements in all directions
+
+    if (this.moveForward || this.moveBackward) {
+      this.velocity.z += direction.z * 2 * delta * this.speed;
+    }
+
+    if (this.moveLeft || this.moveRight) {
+      this.velocity.x += direction.x * 2 * delta * this.speed;
+    }
+
+    return this.velocity
+      .clone()
+      .normalize()
+      .applyQuaternion(currentRotation)
+      .multiplyScalar(this.velocity.length());
   }
 
   private setListeners(): void {
@@ -127,6 +172,10 @@ export class PlayerControlSystem extends System {
       case "ArrowRight":
       case "KeyD":
         this.moveRight = isKeyDown;
+        break;
+
+      case "Space":
+        if (isKeyDown) this.jumpInitiated = true;
         break;
 
       case "ShiftLeft":
