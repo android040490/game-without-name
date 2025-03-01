@@ -123,14 +123,17 @@ export class PlayerControlSystem extends System {
       this.decelerationRate * delta,
     );
 
-    const direction = new THREE.Vector3();
-
-    direction.z = Number(this.moveBackward) - Number(this.moveForward);
-    direction.x = Number(this.moveRight) - Number(this.moveLeft);
+    // Compute movement direction
+    const direction = new THREE.Vector3(
+      Number(this.moveRight) - Number(this.moveLeft),
+      0,
+      Number(this.moveBackward) - Number(this.moveForward),
+    );
 
     if (direction.lengthSq() > 0) {
       direction.normalize(); // Avoid diagonal speed boost
 
+      // Apply acceleration
       this.velocity.addScaledVector(
         direction,
         this.speed * this.accelerationFactor * delta,
