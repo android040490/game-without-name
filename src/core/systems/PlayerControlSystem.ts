@@ -13,8 +13,10 @@ import { PhysicsManager } from "../managers/PhysicsManager";
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
   private readonly physicsManager: PhysicsManager;
-  private readonly minSpeed = 0.3;
-  private readonly maxSpeed = 1;
+  private readonly minSpeed = 3;
+  private readonly maxSpeed = 10;
+  private readonly accelerationFactor = 0.1;
+  private readonly decelerationRate = 10;
   private speed: number;
   private velocity: THREE.Vector3;
   private moveForward = false;
@@ -116,28 +118,32 @@ export class PlayerControlSystem extends System {
     currentRotation: THREE.Quaternion,
   ): THREE.Vector3 {
     const delta = this.timeManager.delta / 1000;
-    this.velocity.z -= this.velocity.z * 10.0 * delta;
-    this.velocity.x -= this.velocity.x * 10.0 * delta;
+    this.velocity.lerp(
+      new THREE.Vector3(0, 0, 0),
+      this.decelerationRate * delta,
+    );
 
     const direction = new THREE.Vector3();
 
     direction.z = Number(this.moveBackward) - Number(this.moveForward);
     direction.x = Number(this.moveRight) - Number(this.moveLeft);
-    direction.normalize(); // this ensures consistent movements in all directions
 
-    if (this.moveForward || this.moveBackward) {
-      this.velocity.z += direction.z * 2 * delta * this.speed;
+    if (direction.lengthSq() > 0) {
+      direction.normalize(); // Avoid diagonal speed boost
+
+      this.velocity.addScaledVector(
+        direction,
+        this.speed * this.accelerationFactor * delta,
+      );
+
+      // Clamp velocity to max speed
+      const maxSpeed = this.speed * delta;
+      if (this.velocity.length() > maxSpeed) {
+        this.velocity.normalize().multiplyScalar(maxSpeed);
+      }
     }
 
-    if (this.moveLeft || this.moveRight) {
-      this.velocity.x += direction.x * 2 * delta * this.speed;
-    }
-
-    return this.velocity
-      .clone()
-      .normalize()
-      .applyQuaternion(currentRotation)
-      .multiplyScalar(this.velocity.length());
+    return this.velocity.clone().applyQuaternion(currentRotation);
   }
 
   private setListeners(): void {
