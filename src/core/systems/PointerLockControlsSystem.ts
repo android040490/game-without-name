@@ -1,5 +1,5 @@
 import { CameraComponent } from "../components/CameraComponent";
-import { PhysicsComponent } from "../components/PhysicsComponent";
+import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { PointerLockControlsComponent } from "../components/PointerLockControlsComponent";
 import { Game } from "../Game";
 import { CameraManager } from "../managers/CameraManager";
@@ -17,7 +17,7 @@ export class PointerLockControlsSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponent(PointerLockControlsComponent);
+    return entity.hasComponents(PointerLockControlsComponent, CameraComponent);
   }
 
   removeEntity(entity: Entity): void {
@@ -53,16 +53,13 @@ export class PointerLockControlsSystem extends System {
 
   update(): void {
     for (const [_, entity] of this.entities) {
-      const { rigidBody } = entity.getComponent(PhysicsComponent) ?? {};
-      const { camera } = entity.getComponent(CameraComponent) ?? {};
+      const { camera } = entity.getComponent(CameraComponent)!;
+      const characterMovementComponent = entity.getComponent(
+        CharacterMovementComponent,
+      )!;
 
-      if (rigidBody && camera) {
-        const rotation = camera.quaternion;
-        rigidBody.setRotation(
-          { x: 0, y: rotation.y, z: rotation.z, w: rotation.w },
-          true,
-        );
-      }
+      const rotation = camera.quaternion;
+      characterMovementComponent.rotation = rotation;
     }
   }
 }

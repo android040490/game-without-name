@@ -6,14 +6,13 @@ import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { TimeManager } from "../managers/TimeManager";
-import { KinematicCharacterController } from "@dimforge/rapier3d";
+import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
   private readonly minSpeed = 0.3;
   private readonly maxSpeed = 1;
   private speed: number;
-  private characterController: KinematicCharacterController;
   private velocity: THREE.Vector3;
   private moveForward = false;
   private moveLeft = false;
@@ -27,19 +26,13 @@ export class PlayerControlSystem extends System {
     this.speed = this.minSpeed;
     this.velocity = new THREE.Vector3();
 
-    let offset = 0.01;
-    this.characterController =
-      game.physicsManager.createCharacterController(offset);
-    this.characterController.enableSnapToGround(0.5);
-    this.characterController.setApplyImpulsesToDynamicBodies(true);
-    this.characterController.setMinSlopeSlideAngle((10 * Math.PI) / 180);
-
     this.handleKeyboardEvent = this.handleKeyboardEvent.bind(this);
   }
 
   appliesTo(entity: Entity): boolean {
     return entity.hasComponents(
       PlayerComponent,
+      CharacterMovementComponent,
       PhysicsComponent, // TODO: maybe to move the check for this component to the add entity method
       RotationComponent, // TODO: maybe to move the check for this component to the add entity method
     );
@@ -66,8 +59,11 @@ export class PlayerControlSystem extends System {
     for (const [_, entity] of this.entities) {
       const { rigidBody, collider } = entity.getComponent(PhysicsComponent)!;
       const { rotation } = entity.getComponent(RotationComponent)!;
+      const characterMovementComponent = entity.getComponent(
+        CharacterMovementComponent,
+      );
 
-      if (!collider || !rigidBody) {
+      if (!collider || !rigidBody || !characterMovementComponent) {
         continue;
       }
 
@@ -95,26 +91,7 @@ export class PlayerControlSystem extends System {
         .applyQuaternion(rotation)
         .multiplyScalar(this.velocity.length());
 
-      this.characterController.computeColliderMovement(
-        collider,
-        { x: movement.x, y: 0, z: movement.z }, // The collider we would like to move.
-      );
-
-      // Read the result.
-      let correctedMovement = this.characterController.computedMovement();
-
-      const prevPosition = new THREE.Vector3().copy(rigidBody.translation());
-
-      const newPosition = prevPosition.add(correctedMovement);
-
-      rigidBody.setTranslation(
-        {
-          x: newPosition.x,
-          y: newPosition.y,
-          z: newPosition.z,
-        },
-        true,
-      );
+      characterMovementComponent.position = movement;
     }
   }
 
