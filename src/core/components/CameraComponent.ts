@@ -10,8 +10,8 @@ export class CameraComponent {
   public offsetDistance: number;
   public offsetHeight: number;
 
-  constructor(props?: CameraProperties) {
-    const { offsetDistance = 0.1, offsetHeight = 1 } = props ?? {};
+  constructor(config?: CameraProperties) {
+    const { offsetDistance = 0.1, offsetHeight = 1 } = config ?? {};
 
     this.camera = new PerspectiveCamera(
       50,

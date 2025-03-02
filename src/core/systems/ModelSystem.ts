@@ -61,7 +61,7 @@ export class ModelSystem extends System {
           shape: { type: "box", sizes: size },
           density: 10,
           rigidBodyType: "dynamic",
-          restitution: 0.9,
+          restitution: 0.2,
         }),
       ];
 

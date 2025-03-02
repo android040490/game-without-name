@@ -17,10 +17,10 @@ import { systems } from "./systems";
 let instance: Game;
 
 export class Game {
-  private readonly eventBus!: EventBus;
   private stats?: Stats;
 
   public readonly canvas!: HTMLCanvasElement;
+  public readonly eventBus!: EventBus;
   public readonly debugManager!: DebugManager;
   public readonly windowSizeManager!: WindowSizeManager;
   public readonly timeManager!: TimeManager;
