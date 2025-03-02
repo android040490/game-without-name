@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { PhysicsComponent } from "../components/PhysicsComponent";
-import { PlayerComponent } from "../components/PlayerComponent";
 import { RotationComponent } from "../components/RotationComponent";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
@@ -9,36 +8,30 @@ import { TimeManager } from "../managers/TimeManager";
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { Collider, RigidBody } from "@dimforge/rapier3d";
 import { PhysicsManager } from "../managers/PhysicsManager";
+import { PlayerControlComponent } from "../components/PlayerControlComponent";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
   private readonly physicsManager: PhysicsManager;
-  private readonly minSpeed = 3;
-  private readonly maxSpeed = 10;
-  private readonly accelerationFactor = 0.1;
-  private readonly decelerationRate = 10;
-  private speed: number;
-  private velocity: THREE.Vector3;
   private moveForward = false;
   private moveLeft = false;
   private moveBackward = false;
   private moveRight = false;
   private jumpInitiated = false;
+  private accelerate = false;
 
   constructor(game: Game) {
     super(game);
 
     this.timeManager = game.timeManager;
     this.physicsManager = game.physicsManager;
-    this.speed = this.minSpeed;
-    this.velocity = new THREE.Vector3();
 
     this.handleKeyboardEvent = this.handleKeyboardEvent.bind(this);
   }
 
   appliesTo(entity: Entity): boolean {
     return entity.hasComponents(
-      PlayerComponent,
+      PlayerControlComponent,
       CharacterMovementComponent,
       PhysicsComponent, // TODO: maybe to move the check for this component to the add entity method
       RotationComponent, // TODO: maybe to move the check for this component to the add entity method
@@ -48,7 +41,7 @@ export class PlayerControlSystem extends System {
   addEntity(entity: Entity): void {
     if (this.entities.size === 1) {
       console.error(
-        "PlayerControlSystem: a game cannot have more than one entity with a PlayerComponent. Attempting to add an entity: ",
+        "PlayerControlSystem: a game cannot have more than one entity with a PlayerControlComponent. Attempting to add an entity: ",
         entity,
       );
       return;
@@ -69,12 +62,18 @@ export class PlayerControlSystem extends System {
       const characterMovementComponent = entity.getComponent(
         CharacterMovementComponent,
       )!;
+      const player = entity.getComponent(PlayerControlComponent)!;
 
       if (!collider || !rigidBody) {
         continue;
       }
 
-      characterMovementComponent.position = this.computeNextMovement(rotation);
+      player.accelerate = this.accelerate;
+
+      characterMovementComponent.position = this.computeNextMovement(
+        player,
+        rotation,
+      );
 
       if (this.jumpInitiated && this.detectGround(rigidBody, collider)) {
         this.jump(rigidBody);
@@ -115,13 +114,13 @@ export class PlayerControlSystem extends System {
   }
 
   private computeNextMovement(
+    player: PlayerControlComponent,
     currentRotation: THREE.Quaternion,
   ): THREE.Vector3 {
+    const { velocity, speed, accelerationFactor, decelerationRate } = player;
+
     const delta = this.timeManager.delta / 1000;
-    this.velocity.lerp(
-      new THREE.Vector3(0, 0, 0),
-      this.decelerationRate * delta,
-    );
+    velocity.lerp(new THREE.Vector3(0, 0, 0), decelerationRate * delta);
 
     // Compute movement direction
     const direction = new THREE.Vector3(
@@ -134,19 +133,16 @@ export class PlayerControlSystem extends System {
       direction.normalize(); // Avoid diagonal speed boost
 
       // Apply acceleration
-      this.velocity.addScaledVector(
-        direction,
-        this.speed * this.accelerationFactor * delta,
-      );
+      velocity.addScaledVector(direction, speed * accelerationFactor * delta);
 
       // Clamp velocity to max speed
-      const maxSpeed = this.speed * delta;
-      if (this.velocity.length() > maxSpeed) {
-        this.velocity.normalize().multiplyScalar(maxSpeed);
+      const maxSpeed = speed * delta;
+      if (velocity.length() > maxSpeed) {
+        velocity.normalize().multiplyScalar(maxSpeed);
       }
     }
 
-    return this.velocity.clone().applyQuaternion(currentRotation);
+    return velocity.clone().applyQuaternion(currentRotation);
   }
 
   private setListeners(): void {
@@ -188,7 +184,7 @@ export class PlayerControlSystem extends System {
         break;
 
       case "ShiftLeft":
-        this.speed = isKeyDown ? this.maxSpeed : this.minSpeed;
+        this.accelerate = isKeyDown;
     }
   }
 }
