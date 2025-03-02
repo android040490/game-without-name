@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { EnemyComponent } from "../components/EnemyComponent";
-import { TargetDirectionComponent } from "../components/TargetDirectionComponent";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { PositionComponent } from "../components/PositionComponent";
@@ -9,27 +8,36 @@ import { VelocityComponent } from "../components/VelocityComponent";
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { Game } from "../Game";
 import { TimeManager } from "../managers/TimeManager";
+import { EventBus } from "../event/EventBus";
+import { PlayerPositionUpdated } from "../event/PlayerPositionUpdated";
 
 export class EnemyControlSystem extends System {
-  private timeManager: TimeManager;
+  private readonly timeManager: TimeManager;
+  private readonly eventBus: EventBus;
+
+  private targetDirection?: THREE.Vector3;
 
   constructor(game: Game) {
     super(game);
 
     this.timeManager = game.timeManager;
+    this.eventBus = game.eventBus;
+
+    this.eventBus.on(PlayerPositionUpdated, (event) => {
+      this.targetDirection = event.position;
+    });
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponents(
-      EnemyComponent,
-      CharacterMovementComponent,
-      TargetDirectionComponent,
-    );
+    return entity.hasComponents(EnemyComponent, CharacterMovementComponent);
   }
 
   update(): void {
+    if (!this.targetDirection) {
+      return;
+    }
+
     for (const [_, entity] of this.entities) {
-      const { direction } = entity.getComponent(TargetDirectionComponent)!;
       const { position } = entity.getComponent(PositionComponent) ?? {};
       const { rotation } = entity.getComponent(RotationComponent) ?? {};
       const characterMovementComponent = entity.getComponent(
@@ -39,14 +47,14 @@ export class EnemyControlSystem extends System {
 
       if (position && rotation) {
         characterMovementComponent.rotation = this.computeNextRotation(
-          direction,
+          this.targetDirection,
           position,
           rotation,
         );
       }
       if (position && velocity) {
         characterMovementComponent.position = this.computeNextPosition(
-          direction,
+          this.targetDirection,
           position,
           velocity,
         );

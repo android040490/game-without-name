@@ -6,16 +6,21 @@ import { PhysicsManager } from "../managers/PhysicsManager";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { TimeManager } from "../managers/TimeManager";
 import { RotationComponent } from "../components/RotationComponent";
+import { EventBus } from "../event/EventBus";
+import { PlayerPositionUpdated } from "../event/PlayerPositionUpdated";
+import { PlayerComponent } from "../components/PlayerComponent";
 
 export class PhysicsSystem extends System {
   private readonly physicsManager: PhysicsManager;
   private readonly timeManager: TimeManager;
+  private readonly eventBus: EventBus;
 
   constructor(game: Game) {
     super(game);
 
     this.physicsManager = this.game.physicsManager;
     this.timeManager = this.game.timeManager;
+    this.eventBus = game.eventBus;
   }
 
   appliesTo(entity: Entity): boolean {
@@ -56,14 +61,20 @@ export class PhysicsSystem extends System {
       const { rigidBody } = entity.getComponent(PhysicsComponent) ?? {};
       const { position } = entity.getComponent(PositionComponent) ?? {};
       const { rotation } = entity.getComponent(RotationComponent) ?? {};
+      const isPlayer = entity.hasComponent(PlayerComponent);
 
       if (position && rigidBody) {
         const newPosition = rigidBody.translation();
         position.copy(newPosition);
       }
+
       if (rotation && rigidBody) {
         const newRotation = rigidBody.rotation();
         rotation.copy(newRotation);
+      }
+
+      if (position && isPlayer) {
+        this.eventBus.emit(new PlayerPositionUpdated(position));
       }
     }
 

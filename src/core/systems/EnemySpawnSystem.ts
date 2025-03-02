@@ -1,8 +1,8 @@
-import { CharacterComponent } from "../components/CharacterComponent";
+import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
+import { EnemyComponent } from "../components/EnemyComponent";
 import { ModelComponent } from "../components/ModelComponent";
 import { PositionComponent } from "../components/PositionComponent";
 import { RotationComponent } from "../components/RotationComponent";
-import { TargetDirectionComponent } from "../components/TargetDirectionComponent";
 import { VelocityComponent } from "../components/VelocityComponent";
 import { Game } from "../Game";
 import { EntityManager } from "../managers/EntityManager";
@@ -26,23 +26,17 @@ export class EnemySpawnSystem extends System {
 
   private shouldSpawnEnemy(): boolean {
     // TODO: add more complex logic
-    return Math.random() < 0.001;
+    return Math.random() < 0.002;
   }
 
   private spawnEnemy() {
     const entity = new Entity();
+    entity.addComponent(new EnemyComponent());
     entity.addComponent(new ModelComponent("models/animated-avatar.glb"));
     entity.addComponent(new PositionComponent(0, 4, 0));
     entity.addComponent(new RotationComponent(0, 0, 0, 1));
-    entity.addComponent(new CharacterComponent());
-    entity.addComponent(new VelocityComponent(6.5));
-    entity.addComponent(
-      new TargetDirectionComponent(
-        Math.random() * 100 - 50,
-        0,
-        Math.random() * 100 - 50,
-      ),
-    );
+    entity.addComponent(new CharacterMovementComponent());
+    entity.addComponent(new VelocityComponent(3));
     this.entityManager.addEntity(entity);
   }
 }

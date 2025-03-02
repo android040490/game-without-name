@@ -87,7 +87,7 @@ export class PlayerControlSystem extends System {
     rigidBody.applyImpulse(
       {
         x: 0,
-        y: 10,
+        y: 100,
         z: 0,
       },
       true,

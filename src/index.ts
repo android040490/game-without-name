@@ -6,6 +6,10 @@ import { RotationComponent } from "./core/components/RotationComponent";
 import { MeshConfigComponent } from "./core/components/MeshConfigComponent";
 import { TextureComponent } from "./core/components/TextureComponent";
 import { EnvironmentComponent } from "./core/components/EnvironmentComponent";
+import { CameraComponent } from "./core/components/CameraComponent";
+import { PointerLockControlsComponent } from "./core/components/PointerLockControlsComponent";
+import { PlayerComponent } from "./core/components/PlayerComponent";
+import { CharacterMovementComponent } from "./core/components/CharacterMovementComponent";
 
 const game = new Game(
   document.querySelector("canvas.webgl") as HTMLCanvasElement,
@@ -57,19 +61,46 @@ const createMesh = () => {
     }),
   );
   entity.addComponent(new RotationComponent(0, 0, 1, 2));
-  entity.addComponent(new PositionComponent(5, 0, 5));
+  entity.addComponent(new PositionComponent(-10, 5, 15));
   entity.addComponent(
     new PhysicsComponent({
       shape: { type: "box", sizes: { x: 1, y: 1, z: 1 } },
-      density: 1,
+      density: 5,
       rigidBodyType: "dynamic",
-      restitution: 0.9,
+      restitution: 0.2,
     }),
   );
 
   game.entityManager.addEntity(entity);
 };
 
+const createPlayer = () => {
+  const entity = new Entity();
+  entity.addComponent(new PositionComponent(3, 10, -4));
+  entity.addComponent(new RotationComponent(0, 0, 0, 1));
+  entity.addComponent(new CharacterMovementComponent());
+  entity.addComponent(
+    new MeshConfigComponent({
+      geometry: { type: "box", params: [1, 2, 1] },
+      material: { type: "standard", params: { visible: false } },
+    }),
+  );
+  entity.addComponent(
+    new PhysicsComponent({
+      shape: { type: "box", sizes: { x: 1, y: 2, z: 1 } },
+      density: 10,
+      rigidBodyType: "dynamic",
+      lockRotation: true,
+      restitution: 0.5,
+    }),
+  );
+  entity.addComponent(new CameraComponent({ offsetHeight: 0.5 }));
+  entity.addComponent(new PointerLockControlsComponent());
+  entity.addComponent(new PlayerComponent());
+  game.entityManager.addEntity(entity);
+};
+
 createEnvironment();
 createFloor();
 createMesh();
+createPlayer();
