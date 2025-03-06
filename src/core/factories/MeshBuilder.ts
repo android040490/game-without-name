@@ -1,45 +1,28 @@
 import * as THREE from "three";
 
 // Geometry Config Types
-interface BoxGeometryConfig {
-  type: "box";
-  params: ConstructorParameters<typeof THREE.BoxGeometry>;
-}
-
-interface CylinderGeometryConfig {
-  type: "cylinder";
-  params: ConstructorParameters<typeof THREE.CylinderGeometry>;
-}
-
-interface SphereGeometryConfig {
-  type: "sphere";
-  params: ConstructorParameters<typeof THREE.SphereGeometry>;
-}
-
 type GeometryConfig =
-  | BoxGeometryConfig
-  | CylinderGeometryConfig
-  | SphereGeometryConfig;
+  | { type: "box"; params: ConstructorParameters<typeof THREE.BoxGeometry> }
+  | {
+      type: "cylinder";
+      params: ConstructorParameters<typeof THREE.CylinderGeometry>;
+    }
+  | {
+      type: "sphere";
+      params: ConstructorParameters<typeof THREE.SphereGeometry>;
+    }
+  | {
+      type: "capsule";
+      params: ConstructorParameters<typeof THREE.CapsuleGeometry>;
+    };
 
 // Material Config Types
-interface StandardMaterialConfig {
-  type: "standard";
-  params: ConstructorParameters<typeof THREE.MeshStandardMaterial>[0];
-}
-interface PhongMaterialConfig {
-  type: "phong";
-  params: ConstructorParameters<typeof THREE.MeshPhongMaterial>[0];
-}
-interface BasicMaterialConfig {
-  type: "basic";
-  params: ConstructorParameters<typeof THREE.MeshBasicMaterial>[0];
-}
-
 type MaterialConfig =
-  | StandardMaterialConfig
-  | PhongMaterialConfig
-  | BasicMaterialConfig;
+  | { type: "standard"; params?: THREE.MeshStandardMaterialParameters }
+  | { type: "phong"; params?: THREE.MeshPhongMaterialParameters }
+  | { type: "basic"; params?: THREE.MeshBasicMaterialParameters };
 
+// Texture Types
 export type TextureKey =
   | "map"
   | "normalMap"
@@ -47,9 +30,7 @@ export type TextureKey =
   | "displacementMap"
   | "roughnessMap";
 
-export type TexturePaths = {
-  [key in TextureKey]?: string;
-};
+export type TexturePaths = Partial<Record<TextureKey, string>>;
 
 export interface TextureConfig {
   texturePaths: TexturePaths;
@@ -61,6 +42,25 @@ export type TextureMap = {
   [key in TextureKey]?: THREE.Texture;
 };
 
+const GEOMETRY_MAP: Record<
+  GeometryConfig["type"],
+  new (...args: any) => THREE.BufferGeometry
+> = {
+  box: THREE.BoxGeometry,
+  sphere: THREE.SphereGeometry,
+  cylinder: THREE.CylinderGeometry,
+  capsule: THREE.CapsuleGeometry,
+};
+
+const MATERIAL_MAP: Record<
+  MaterialConfig["type"],
+  new (params?: any) => THREE.Material
+> = {
+  standard: THREE.MeshStandardMaterial,
+  phong: THREE.MeshPhongMaterial,
+  basic: THREE.MeshBasicMaterial,
+};
+
 export interface MeshConfig {
   geometry: GeometryConfig;
   material: MaterialConfig;
@@ -68,37 +68,19 @@ export interface MeshConfig {
 
 export class MeshBuilder {
   createMesh(config: MeshConfig): THREE.Mesh {
-    const { geometry: geometryConfig, material: materialConfig } = config;
-
-    const geometry = this.createGeometry(geometryConfig);
-    const material = this.createMaterial(materialConfig);
+    const geometry = this.createGeometry(config.geometry);
+    const material = this.createMaterial(config.material);
 
     return new THREE.Mesh(geometry, material);
   }
 
-  private createGeometry(geometryConfig: GeometryConfig): THREE.BufferGeometry {
-    switch (geometryConfig.type) {
-      case "box":
-        return new THREE.BoxGeometry(...geometryConfig.params);
-
-      case "sphere":
-        return new THREE.SphereGeometry(...geometryConfig.params);
-
-      case "cylinder":
-        return new THREE.CylinderGeometry(...geometryConfig.params);
-    }
+  private createGeometry(config: GeometryConfig): THREE.BufferGeometry {
+    return new GEOMETRY_MAP[config.type](...config.params);
   }
 
-  private createMaterial(materialConfig: MaterialConfig): THREE.Material {
-    switch (materialConfig.type) {
-      case "standard":
-        return new THREE.MeshStandardMaterial(materialConfig.params);
+  private createMaterial(config: MaterialConfig): THREE.Material {
+    const material = new MATERIAL_MAP[config.type](config.params || {});
 
-      case "phong":
-        return new THREE.MeshPhongMaterial(materialConfig.params);
-
-      case "basic":
-        return new THREE.MeshBasicMaterial(materialConfig.params);
-    }
+    return material;
   }
 }
