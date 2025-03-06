@@ -2,8 +2,13 @@ const RAPIER = await import("@dimforge/rapier3d");
 import {
   Collider,
   ColliderDesc,
+  InteractionGroups,
+  KinematicCharacterController,
+  QueryFilterFlags,
+  RayColliderHit,
   RigidBody,
   RigidBodyDesc,
+  Vector,
   World,
 } from "@dimforge/rapier3d";
 
@@ -41,6 +46,7 @@ type RigidBodyType =
 
 interface RigidBodyParams {
   rigidBodyType: RigidBodyType;
+  lockRotation?: boolean;
 }
 
 export type PhysicalObjectParams = RigidBodyParams & ColliderParams;
@@ -80,8 +86,37 @@ export class PhysicsManager {
     this._instance.removeRigidBody(rigidBody);
   }
 
+  createCharacterController(offset: number): KinematicCharacterController {
+    return this._instance.createCharacterController(offset);
+  }
+
+  castRay(
+    origin: Vector,
+    direction: Vector,
+    maxToi: number = 1,
+    solid: boolean = true,
+    filterFlags?: QueryFilterFlags,
+    filterGroups?: InteractionGroups,
+    filterExcludeCollider?: Collider,
+    filterExcludeRigidBody?: RigidBody,
+    filterPredicate?: (collider: Collider) => boolean,
+  ): RayColliderHit | null {
+    let ray = new RAPIER.Ray(origin, direction);
+
+    return this._instance.castRay(
+      ray,
+      maxToi,
+      solid,
+      filterFlags,
+      filterGroups,
+      filterExcludeCollider,
+      filterExcludeRigidBody,
+      filterPredicate,
+    );
+  }
+
   private createRigidBodyDesc(params: RigidBodyParams): RigidBodyDesc {
-    const { rigidBodyType } = params;
+    const { rigidBodyType, lockRotation } = params;
 
     let bodyDesc: RigidBodyDesc;
 
@@ -101,6 +136,10 @@ export class PhysicsManager {
       case "kinematicVelocityBased":
         bodyDesc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
         break;
+    }
+
+    if (lockRotation) {
+      bodyDesc.lockRotations();
     }
 
     return bodyDesc;

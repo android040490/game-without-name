@@ -40,7 +40,7 @@ export class ModelSystem extends System {
 
     if (model) {
       const modelMesh = SkeletonUtils.clone(model.scene);
-      const box = new THREE.Box3().setFromObject(modelMesh);
+      const box = new THREE.Box3().setFromObject(model.scene);
       const size = new THREE.Vector3();
       box.getSize(size);
 
@@ -61,7 +61,7 @@ export class ModelSystem extends System {
           shape: { type: "box", sizes: size },
           density: 10,
           rigidBodyType: "dynamic",
-          restitution: 0.9,
+          restitution: 0.2,
         }),
       ];
 
