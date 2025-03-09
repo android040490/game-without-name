@@ -1,6 +1,6 @@
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { EnemyComponent } from "../components/EnemyComponent";
-import { CharacterModelComponent } from "../components/CharacterModelComponent";
+import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
 import { PositionComponent } from "../components/PositionComponent";
 import { RotationComponent } from "../components/RotationComponent";
 import { VelocityComponent } from "../components/VelocityComponent";
@@ -33,7 +33,7 @@ export class EnemySpawnSystem extends System {
     const entity = new Entity();
     entity.addComponent(new EnemyComponent());
     entity.addComponent(
-      new CharacterModelComponent({
+      new CharacterConfigComponent({
         modelPath: "models/animated-avatar.glb",
       }),
     );

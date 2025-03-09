@@ -5,13 +5,13 @@ import { System } from "../models/System";
 import { RenderComponent } from "../components/RenderComponent";
 import { EntityManager } from "../managers/EntityManager";
 import { ResourcesManager } from "../managers/ResourcesManager";
-import { CharacterModelComponent } from "../components/CharacterModelComponent";
+import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { GLTF, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { MeshBuilder } from "../factories/MeshBuilder";
 
-export class CharacterModelSystem extends System {
+export class CharacterFactorySystem extends System {
   private readonly entityManager: EntityManager;
   private readonly resourcesManager: ResourcesManager;
   private readonly meshBuilder: MeshBuilder;
@@ -25,7 +25,7 @@ export class CharacterModelSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponent(CharacterModelComponent);
+    return entity.hasComponent(CharacterConfigComponent);
   }
 
   addEntity(entity: Entity): void {
@@ -35,12 +35,8 @@ export class CharacterModelSystem extends System {
   }
 
   async createCharacter(entity: Entity): Promise<void> {
-    const {
-      modelPath,
-      height = 2,
-      density = 10,
-      isBoundingBoxVisible = false,
-    } = entity.getComponent(CharacterModelComponent)!.config ?? {};
+    const { modelPath, height, density, isBoundingBoxVisible } =
+      entity.getComponent(CharacterConfigComponent)!;
 
     let components: object[] = [];
     let model: GLTF | undefined;

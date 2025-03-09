@@ -4,7 +4,7 @@ import { RenderSystem } from "./RenderSystem";
 import { PhysicsSystem } from "./PhysicsSystem";
 import { MeshBuilderSystem } from "./MeshBuilderSystem";
 import { EnvironmentSystem } from "./EnvironmentSystem";
-import { CharacterModelSystem } from "./CharacterModelSystem";
+import { CharacterFactorySystem } from "./CharacterFactorySystem";
 import { AnimationSystem } from "./AnimationSystem";
 import { CharacterMovementSystem } from "./CharacterMovementSystem";
 import { EnemySpawnSystem } from "./EnemySpawnSystem";
@@ -18,7 +18,7 @@ export const systems: Constructor<System>[] = [
   EnvironmentSystem,
   EnemySpawnSystem,
   EnemyControlSystem,
-  CharacterModelSystem,
+  CharacterFactorySystem,
   PlayerControlSystem,
   PointerLockControlsSystem,
   CharacterMovementSystem,
