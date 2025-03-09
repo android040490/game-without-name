@@ -34,16 +34,54 @@ export class CharacterFactorySystem extends System {
     this.createCharacter(entity);
   }
 
-  async createCharacter(entity: Entity): Promise<void> {
+  private async createCharacter(entity: Entity): Promise<void> {
     const { modelPath, height, density, isBoundingBoxVisible } =
       entity.getComponent(CharacterConfigComponent)!;
 
-    let components: object[] = [];
     let model: GLTF | undefined;
 
     const radius = height * 0.3;
     const capsuleLength = height - radius * 2;
-    const mesh = this.meshBuilder.createMesh({
+
+    const capsule = this.createCapsule(
+      radius,
+      capsuleLength,
+      isBoundingBoxVisible,
+    );
+
+    let components: object[] = [
+      new RenderComponent(capsule),
+      new PhysicsComponent({
+        shape: { type: "capsule", height: capsuleLength, radius },
+        density,
+        rigidBodyType: "dynamic",
+        lockRotation: true,
+      }),
+    ];
+
+    if (modelPath) {
+      model = await this.resourcesManager.loadModel(modelPath);
+    }
+
+    if (model) {
+      const modelMesh = this.prepareModel(model, height);
+
+      if (model.animations.length > 0) {
+        components.push(new AnimationComponent(modelMesh, model.animations));
+      }
+
+      capsule.add(modelMesh);
+    }
+
+    this.entityManager.addComponents(entity, components);
+  }
+
+  private createCapsule(
+    radius: number,
+    capsuleLength: number,
+    isBoundingBoxVisible: boolean,
+  ): THREE.Mesh {
+    return this.meshBuilder.createMesh({
       geometry: {
         type: "capsule",
         params: [radius, capsuleLength, 1, 3],
@@ -57,37 +95,14 @@ export class CharacterFactorySystem extends System {
         },
       },
     });
+  }
 
-    if (modelPath) {
-      model = await this.resourcesManager.loadModel(modelPath);
-    }
-
-    if (model) {
-      const modelMesh = SkeletonUtils.clone(model.scene);
-      const box = new THREE.Box3().setFromObject(model.scene);
-      const boxSize = new THREE.Vector3();
-      box.getSize(boxSize);
-      const ratio = height / boxSize.y;
-      modelMesh.scale.multiplyScalar(ratio);
-      modelMesh.position.y = -height / 2;
-
-      if (model.animations.length > 0) {
-        components.push(new AnimationComponent(modelMesh, model.animations));
-      }
-
-      mesh.add(modelMesh);
-    }
-
-    components.push(
-      new RenderComponent(mesh),
-      new PhysicsComponent({
-        shape: { type: "capsule", height: capsuleLength, radius },
-        density,
-        rigidBodyType: "dynamic",
-        lockRotation: true,
-      }),
-    );
-
-    this.entityManager.addComponents(entity, components);
+  private prepareModel(model: GLTF, height: number): THREE.Object3D {
+    const modelMesh = SkeletonUtils.clone(model.scene);
+    const box = new THREE.Box3().setFromObject(model.scene);
+    const ratio = height / box.getSize(new THREE.Vector3()).y;
+    modelMesh.scale.setScalar(ratio);
+    modelMesh.position.y = -height / 2;
+    return modelMesh;
   }
 }
