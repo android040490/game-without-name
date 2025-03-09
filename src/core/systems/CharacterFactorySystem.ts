@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
-import { RenderComponent } from "../components/RenderComponent";
+import { MeshComponent } from "../components/MeshComponent";
 import { EntityManager } from "../managers/EntityManager";
 import { ResourcesManager } from "../managers/ResourcesManager";
 import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
@@ -50,7 +50,7 @@ export class CharacterFactorySystem extends System {
     );
 
     let components: object[] = [
-      new RenderComponent(capsule),
+      new MeshComponent(capsule),
       new PhysicsComponent({
         shape: { type: "capsule", height: capsuleLength, radius },
         density,
