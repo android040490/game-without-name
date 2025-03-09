@@ -108,7 +108,7 @@ export class EnvironmentSystem extends System {
       if (!env) {
         continue;
       }
-      env.sunPhi -= this.timeManager.delta * Math.PI * 0.00005;
+      env.sunPhi -= this.timeManager.timeStep * Math.PI * 0.005;
       const sunCosine = Math.cos(env.sunPhi);
 
       const sunPosition = new THREE.Vector3().setFromSphericalCoords(

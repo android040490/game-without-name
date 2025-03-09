@@ -82,7 +82,7 @@ export class EnemyControlSystem extends System {
     position: THREE.Vector3,
     velocity: number,
   ): THREE.Vector3 {
-    const delta = this.timeManager.delta / 1000;
+    const delta = this.timeManager.timeStep;
 
     const nextPosition = targetDirection.clone().sub(position).normalize();
     return nextPosition.multiplyScalar(velocity * delta);

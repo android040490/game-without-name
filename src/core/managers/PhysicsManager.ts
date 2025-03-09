@@ -72,7 +72,7 @@ export class PhysicsManager {
   }
 
   update(deltaTime: number): void {
-    this.instance.timestep = (deltaTime || 16) / 1000;
+    this._instance.timestep = deltaTime;
     this._instance.step();
   }
 

@@ -20,5 +20,7 @@ export class AnimationComponent {
         this.animationMixer.clipAction(animation),
       );
     });
+
+    this.currentActionName = "walk";
   }
 }
