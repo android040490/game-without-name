@@ -19,7 +19,7 @@ export class PlayerControlComponent {
     const {
       minSpeed = 3,
       maxSpeed = 10,
-      accelerationFactor = 0.1,
+      accelerationFactor = 0.2,
       decelerationRate = 10,
     } = config ?? {};
 

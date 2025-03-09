@@ -129,7 +129,7 @@ export class PlayerControlSystem extends System {
   ): THREE.Vector3 {
     const { velocity, speed, accelerationFactor, decelerationRate } = player;
 
-    const delta = this.timeManager.delta / 1000;
+    const delta = this.timeManager.timeStep;
     velocity.lerp(new THREE.Vector3(0, 0, 0), decelerationRate * delta);
 
     // Compute movement direction

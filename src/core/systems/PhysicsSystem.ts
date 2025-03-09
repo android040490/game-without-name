@@ -78,6 +78,6 @@ export class PhysicsSystem extends System {
       }
     }
 
-    this.physicsManager.update(this.timeManager.delta);
+    this.physicsManager.update(this.timeManager.timeStep);
   }
 }

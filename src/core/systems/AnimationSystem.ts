@@ -56,7 +56,7 @@ export class AnimationSystem extends System {
         this.play(entity);
       }
 
-      animationMixer?.update(this.timeManager.delta * 0.001);
+      animationMixer?.update(this.timeManager.timeStep);
     }
   }
 }
