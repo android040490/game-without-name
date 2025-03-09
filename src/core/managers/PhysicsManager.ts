@@ -32,10 +32,17 @@ interface SphereShape {
   radius: number;
 }
 
+interface Capsule {
+  type: "capsule";
+  radius: number;
+  height: number;
+}
+
 interface ColliderParams {
-  shape: BoxShape | SphereShape | CylinderShape;
+  shape: BoxShape | SphereShape | CylinderShape | Capsule;
   density?: number;
   restitution?: number;
+  friction?: number;
 }
 
 type RigidBodyType =
@@ -47,6 +54,8 @@ type RigidBodyType =
 interface RigidBodyParams {
   rigidBodyType: RigidBodyType;
   lockRotation?: boolean;
+  lockTranslation?: boolean;
+  gravityScale?: number;
 }
 
 export type PhysicalObjectParams = RigidBodyParams & ColliderParams;
@@ -116,7 +125,8 @@ export class PhysicsManager {
   }
 
   private createRigidBodyDesc(params: RigidBodyParams): RigidBodyDesc {
-    const { rigidBodyType, lockRotation } = params;
+    const { rigidBodyType, lockRotation, gravityScale, lockTranslation } =
+      params;
 
     let bodyDesc: RigidBodyDesc;
 
@@ -142,11 +152,19 @@ export class PhysicsManager {
       bodyDesc.lockRotations();
     }
 
+    if (lockTranslation) {
+      bodyDesc.lockTranslations();
+    }
+
+    if (gravityScale) {
+      bodyDesc.gravityScale = gravityScale;
+    }
+
     return bodyDesc;
   }
 
   private createColliderDesc(params: ColliderParams): ColliderDesc {
-    const { shape, density, restitution } = params;
+    const { shape, density, restitution, friction } = params;
     let colliderDesc: ColliderDesc;
 
     switch (shape.type) {
@@ -165,6 +183,12 @@ export class PhysicsManager {
           shape.radius,
         );
         break;
+
+      case "capsule":
+        colliderDesc = RAPIER.ColliderDesc.capsule(
+          shape.height / 2,
+          shape.radius,
+        );
     }
 
     if (density !== undefined) {
@@ -172,6 +196,9 @@ export class PhysicsManager {
     }
     if (restitution !== undefined) {
       colliderDesc.setRestitution(restitution);
+    }
+    if (friction) {
+      colliderDesc.friction = friction;
     }
 
     return colliderDesc;

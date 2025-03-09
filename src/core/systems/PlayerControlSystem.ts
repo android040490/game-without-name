@@ -9,6 +9,7 @@ import { CharacterMovementComponent } from "../components/CharacterMovementCompo
 import { Collider, RigidBody } from "@dimforge/rapier3d";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { PlayerControlComponent } from "../components/PlayerControlComponent";
+import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -33,6 +34,7 @@ export class PlayerControlSystem extends System {
     return entity.hasComponents(
       PlayerControlComponent,
       CharacterMovementComponent,
+      CharacterConfigComponent,
       PhysicsComponent, // TODO: maybe to move the check for this component to the add entity method
       RotationComponent, // TODO: maybe to move the check for this component to the add entity method
     );
@@ -62,6 +64,7 @@ export class PlayerControlSystem extends System {
       const characterMovementComponent = entity.getComponent(
         CharacterMovementComponent,
       )!;
+      const { height } = entity.getComponent(CharacterConfigComponent)!;
       const player = entity.getComponent(PlayerControlComponent)!;
 
       if (!collider || !rigidBody) {
@@ -75,7 +78,10 @@ export class PlayerControlSystem extends System {
         rotation,
       );
 
-      if (this.jumpInitiated && this.detectGround(rigidBody, collider)) {
+      if (
+        this.jumpInitiated &&
+        this.detectGround(rigidBody, collider, height)
+      ) {
         this.jump(rigidBody);
       }
       this.jumpInitiated = false;
@@ -93,7 +99,11 @@ export class PlayerControlSystem extends System {
     );
   }
 
-  private detectGround(rigidBody: RigidBody, collider: Collider): boolean {
+  private detectGround(
+    rigidBody: RigidBody,
+    collider: Collider,
+    height: number,
+  ): boolean {
     const position = rigidBody.translation();
 
     const hit = this.physicsManager.castRay(
@@ -103,7 +113,7 @@ export class PlayerControlSystem extends System {
         y: -1,
         z: 0.0,
       },
-      1, // TODO: get half the height of the body so as not to have this value hardcoded
+      height / 2, // get half the height of the body
       true,
       undefined,
       undefined,
