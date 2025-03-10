@@ -3,11 +3,11 @@ import { EnemyComponent } from "../components/EnemyComponent";
 import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
 import { PositionComponent } from "../components/PositionComponent";
 import { RotationComponent } from "../components/RotationComponent";
-import { VelocityComponent } from "../components/VelocityComponent";
 import { Game } from "../Game";
 import { EntityManager } from "../managers/EntityManager";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
+import { CharacterStateComponent } from "../components/CharacterStateComponent";
 
 export class EnemySpawnSystem extends System {
   private readonly entityManager: EntityManager;
@@ -40,7 +40,7 @@ export class EnemySpawnSystem extends System {
     entity.addComponent(new PositionComponent(0, 4, 0));
     entity.addComponent(new RotationComponent(0, 0, 0, 1));
     entity.addComponent(new CharacterMovementComponent());
-    entity.addComponent(new VelocityComponent(3));
+    entity.addComponent(new CharacterStateComponent("idle"));
     this.entityManager.addEntity(entity);
   }
 }
