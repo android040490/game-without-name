@@ -1,4 +1,5 @@
 import { AnimationComponent } from "../components/AnimationComponent";
+import { CharacterStateComponent } from "../components/CharacterStateComponent";
 import { Game } from "../Game";
 import { TimeManager } from "../managers/TimeManager";
 import { Entity } from "../models/Entity";
@@ -14,7 +15,7 @@ export class AnimationSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponent(AnimationComponent);
+    return entity.hasComponents(AnimationComponent, CharacterStateComponent);
   }
 
   addEntity(entity: Entity) {
@@ -49,14 +50,15 @@ export class AnimationSystem extends System {
 
   update(): void {
     for (const [_, entity] of this.entities) {
-      const { animationMixer, currentAction, currentActionName } =
-        entity.getComponent(AnimationComponent) ?? {};
+      const animationComponent = entity.getComponent(AnimationComponent)!;
+      const { currentState } = entity.getComponent(CharacterStateComponent)!;
 
-      if (currentActionName !== currentAction?.getClip().name) {
+      if (animationComponent.currentActionName !== currentState.animation) {
+        animationComponent.currentActionName = currentState.animation;
         this.play(entity);
       }
 
-      animationMixer?.update(this.timeManager.timeStep);
+      animationComponent.animationMixer?.update(this.timeManager.timeStep);
     }
   }
 }
