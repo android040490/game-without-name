@@ -45,9 +45,12 @@ export class PointerLockControlsSystem extends System {
     controlsComponent.controls = this.cameraManager.createPointerLockControls(
       cameraComponent.camera,
     );
+    controlsComponent.controls.maxPolarAngle = 2.3;
 
     document.addEventListener("click", () => {
-      controlsComponent.controls?.lock();
+      if (!controlsComponent.controls?.isLocked) {
+        controlsComponent.controls?.lock();
+      }
     });
   }
 

@@ -11,7 +11,7 @@ import { PointerLockControlsComponent } from "./core/components/PointerLockContr
 import { PlayerComponent } from "./core/components/PlayerComponent";
 import { CharacterMovementComponent } from "./core/components/CharacterMovementComponent";
 import { PlayerControlComponent } from "./core/components/PlayerControlComponent";
-import { CharacterConfigComponent } from "./core/components/CharacterConfigComponent";
+import { PlayerConfigComponent } from "./core/components/PlayerConfigComponent";
 
 const game = new Game(
   document.querySelector("canvas.webgl") as HTMLCanvasElement,
@@ -75,8 +75,8 @@ const createPlayer = () => {
     new PositionComponent(3, 10, -4),
     new RotationComponent(0, 0, 0, 1),
     new CharacterMovementComponent(),
-    new CharacterConfigComponent(),
-    new CameraComponent({ offsetHeight: 0.5 }),
+    new PlayerConfigComponent({ armsModelPath: "models/arms.glb" }),
+    new CameraComponent({ offsetHeight: 0.8 }),
     new PointerLockControlsComponent(),
     new PlayerComponent(),
     new PlayerControlComponent(),
