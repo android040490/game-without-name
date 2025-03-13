@@ -13,6 +13,7 @@ import { PointerLockControlsSystem } from "./PointerLockControlsSystem";
 import { PlayerControlSystem } from "./PlayerControlSystem";
 import { EnemyControlSystem } from "./EnemyControlSystem";
 import { PlayerFactorySystem } from "./PlayerFactorySystem";
+import { PlayerAttackSystem } from "./PlayerAttackSystem";
 
 // The order of the systems is important because it will affect the rendering result and the behavior of the application.
 export const systems: Constructor<System>[] = [
@@ -20,6 +21,7 @@ export const systems: Constructor<System>[] = [
   EnemySpawnSystem,
   EnemyControlSystem,
   PlayerFactorySystem,
+  PlayerAttackSystem,
   CharacterFactorySystem,
   PlayerControlSystem,
   PointerLockControlsSystem,

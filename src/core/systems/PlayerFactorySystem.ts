@@ -10,17 +10,25 @@ import { GLTF } from "three/examples/jsm/Addons.js";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { MeshBuilder } from "../factories/MeshBuilder";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
+import { PhysicsManager } from "../managers/PhysicsManager";
+import { Renderer } from "../managers/Renderer";
+import { PlayerWeaponComponent } from "../components/PlayerWeaponComponent";
+import { ActiveEvents } from "@dimforge/rapier3d";
 
 export class PlayerFactorySystem extends System {
   private readonly entityManager: EntityManager;
   private readonly resourcesManager: ResourcesManager;
   private readonly meshBuilder: MeshBuilder;
+  private readonly physicsManager: PhysicsManager;
+  private readonly renderer: Renderer;
 
   constructor(game: Game) {
     super(game);
 
     this.entityManager = this.game.entityManager;
     this.resourcesManager = this.game.resourcesManager;
+    this.physicsManager = this.game.physicsManager;
+    this.renderer = this.game.renderer;
     this.meshBuilder = new MeshBuilder();
   }
 
@@ -71,11 +79,56 @@ export class PlayerFactorySystem extends System {
         );
       }
 
-      console.log("model", armsMesh.getObjectByName("Proto_sword"));
+      const weaponComponent = this.createWeaponComponent(armsMesh);
+
+      if (weaponComponent) {
+        components.push(weaponComponent);
+      }
+
       capsule.add(armsMesh);
     }
 
     this.entityManager.addComponents(entity, components);
+  }
+
+  private createWeaponComponent(
+    armsMesh: THREE.Object3D,
+  ): PlayerWeaponComponent | undefined {
+    const swordMesh = armsMesh.getObjectByName("Proto_sword");
+
+    if (!swordMesh) {
+      console.error("Arms model doesn't have sword");
+      return;
+    }
+
+    const box = new THREE.Box3().setFromObject(swordMesh);
+    const swordSize = box.getSize(new THREE.Vector3());
+
+    const collider = this.physicsManager.createCollider({
+      shape: {
+        type: "box",
+        sizes: { x: 0.05, y: swordSize.y, z: 0.05 },
+      },
+      sensor: true,
+      activeEvents: ActiveEvents.COLLISION_EVENTS,
+    });
+
+    const debugMesh = this.meshBuilder.createMesh({
+      geometry: {
+        type: "box",
+        params: [0.05, swordSize.y, 0.05],
+      },
+      material: {
+        type: "basic",
+        params: {
+          color: 0x00ff00,
+          wireframe: true,
+        },
+      },
+    });
+    this.renderer.scene.add(debugMesh);
+
+    return new PlayerWeaponComponent(swordMesh, collider, debugMesh);
   }
 
   private createCapsule(

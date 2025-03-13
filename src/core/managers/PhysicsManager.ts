@@ -1,5 +1,6 @@
 const RAPIER = await import("@dimforge/rapier3d");
 import {
+  ActiveEvents,
   Collider,
   ColliderDesc,
   InteractionGroups,
@@ -43,6 +44,9 @@ interface ColliderParams {
   density?: number;
   restitution?: number;
   friction?: number;
+  sensor?: boolean;
+  collisionGroups?: number;
+  activeEvents?: ActiveEvents;
 }
 
 type RigidBodyType =
@@ -83,10 +87,7 @@ export class PhysicsManager {
     const rigidBodyDesc = this.createRigidBodyDesc(params);
     const rigidBody = this._instance.createRigidBody(rigidBodyDesc);
 
-    const collider: Collider = this._instance.createCollider(
-      this.createColliderDesc(params),
-      rigidBody,
-    );
+    const collider: Collider = this.createCollider(params, rigidBody);
 
     return { collider, rigidBody };
   }
@@ -163,8 +164,23 @@ export class PhysicsManager {
     return bodyDesc;
   }
 
+  createCollider(params: ColliderParams, rigidBody?: RigidBody): Collider {
+    return this._instance.createCollider(
+      this.createColliderDesc(params),
+      rigidBody,
+    );
+  }
+
   private createColliderDesc(params: ColliderParams): ColliderDesc {
-    const { shape, density, restitution, friction } = params;
+    const {
+      shape,
+      density,
+      restitution,
+      friction,
+      sensor,
+      collisionGroups,
+      activeEvents,
+    } = params;
     let colliderDesc: ColliderDesc;
 
     switch (shape.type) {
@@ -199,6 +215,15 @@ export class PhysicsManager {
     }
     if (friction) {
       colliderDesc.friction = friction;
+    }
+    if (sensor) {
+      colliderDesc.setSensor(true);
+    }
+    if (collisionGroups) {
+      colliderDesc.setSolverGroups(collisionGroups);
+    }
+    if (activeEvents) {
+      colliderDesc.setActiveEvents(activeEvents);
     }
 
     return colliderDesc;
