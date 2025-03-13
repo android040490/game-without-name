@@ -14,6 +14,7 @@ import { PlayerControlSystem } from "./PlayerControlSystem";
 import { EnemyControlSystem } from "./EnemyControlSystem";
 import { PlayerFactorySystem } from "./PlayerFactorySystem";
 import { PlayerAttackSystem } from "./PlayerAttackSystem";
+import { CollisionSystem } from "./CollisionSystem";
 
 // The order of the systems is important because it will affect the rendering result and the behavior of the application.
 export const systems: Constructor<System>[] = [
@@ -29,6 +30,7 @@ export const systems: Constructor<System>[] = [
   AnimationSystem,
   MeshFactorySystem,
   PhysicsSystem,
+  CollisionSystem,
   RenderSystem,
   CameraSystem,
 ];

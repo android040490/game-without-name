@@ -10,6 +10,7 @@ import { PhysicsComponent } from "../components/PhysicsComponent";
 import { GLTF, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { MeshBuilder } from "../factories/MeshBuilder";
+import { InteractionGroups } from "../constants/InteractionGroups";
 
 export class CharacterFactorySystem extends System {
   private readonly entityManager: EntityManager;
@@ -56,6 +57,7 @@ export class CharacterFactorySystem extends System {
         density,
         rigidBodyType: "dynamic",
         lockRotation: true,
+        collisionGroups: InteractionGroups.ENEMY,
       }),
     ];
 

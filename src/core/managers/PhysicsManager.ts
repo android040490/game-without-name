@@ -3,6 +3,7 @@ import {
   ActiveEvents,
   Collider,
   ColliderDesc,
+  EventQueue,
   InteractionGroups,
   KinematicCharacterController,
   QueryFilterFlags,
@@ -66,18 +67,24 @@ export type PhysicalObjectParams = RigidBodyParams & ColliderParams;
 
 export class PhysicsManager {
   private _instance: World;
+  private _eventQueue: EventQueue;
 
   constructor() {
     this._instance = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+    this._eventQueue = new RAPIER.EventQueue(true);
   }
 
   get instance(): World {
     return this._instance;
   }
 
+  get eventQueue(): EventQueue {
+    return this._eventQueue;
+  }
+
   update(deltaTime: number): void {
     this._instance.timestep = deltaTime;
-    this._instance.step();
+    this._instance.step(this._eventQueue);
   }
 
   createObject(params: PhysicalObjectParams): {
@@ -220,7 +227,7 @@ export class PhysicsManager {
       colliderDesc.setSensor(true);
     }
     if (collisionGroups) {
-      colliderDesc.setSolverGroups(collisionGroups);
+      colliderDesc.setCollisionGroups(collisionGroups);
     }
     if (activeEvents) {
       colliderDesc.setActiveEvents(activeEvents);

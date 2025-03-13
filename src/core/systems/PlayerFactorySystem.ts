@@ -14,6 +14,7 @@ import { PhysicsManager } from "../managers/PhysicsManager";
 import { Renderer } from "../managers/Renderer";
 import { PlayerWeaponComponent } from "../components/PlayerWeaponComponent";
 import { ActiveEvents } from "@dimforge/rapier3d";
+import { InteractionGroups } from "../constants/InteractionGroups";
 
 export class PlayerFactorySystem extends System {
   private readonly entityManager: EntityManager;
@@ -65,6 +66,7 @@ export class PlayerFactorySystem extends System {
         density: 10,
         rigidBodyType: "dynamic",
         lockRotation: true,
+        collisionGroups: InteractionGroups.PLAYER,
       }),
     ];
 
@@ -97,7 +99,7 @@ export class PlayerFactorySystem extends System {
     const swordMesh = armsMesh.getObjectByName("Proto_sword");
 
     if (!swordMesh) {
-      console.error("Arms model doesn't have sword");
+      console.error("PlayerFactorySystem: arms model doesn't have sword");
       return;
     }
 
@@ -111,6 +113,7 @@ export class PlayerFactorySystem extends System {
       },
       sensor: true,
       activeEvents: ActiveEvents.COLLISION_EVENTS,
+      collisionGroups: InteractionGroups.PLAYER_WEAPON,
     });
 
     const debugMesh = this.meshBuilder.createMesh({

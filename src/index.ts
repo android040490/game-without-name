@@ -12,6 +12,7 @@ import { PlayerComponent } from "./core/components/PlayerComponent";
 import { CharacterMovementComponent } from "./core/components/CharacterMovementComponent";
 import { PlayerControlComponent } from "./core/components/PlayerControlComponent";
 import { PlayerConfigComponent } from "./core/components/PlayerConfigComponent";
+import { InteractionGroups } from "./core/constants/InteractionGroups";
 
 const game = new Game(
   document.querySelector("canvas.webgl") as HTMLCanvasElement,
@@ -24,8 +25,8 @@ const createEnvironment = () => {
   game.entityManager.addEntity(entity);
 };
 
-// Floor Entity
-const createFloor = () => {
+// Ground Entity
+const createGround = () => {
   const entity = new Entity();
   entity.addComponents(
     new MeshConfigComponent({
@@ -36,6 +37,7 @@ const createFloor = () => {
     new PhysicsComponent({
       shape: { type: "cylinder", radius: 50, height: 0.5 },
       rigidBodyType: "fixed",
+      collisionGroups: InteractionGroups.GROUND,
     }),
   );
 
@@ -63,6 +65,7 @@ const createMesh = () => {
       density: 5,
       rigidBodyType: "dynamic",
       restitution: 0.2,
+      collisionGroups: InteractionGroups.DYNAMIC_OBJECT,
     }),
   );
 
@@ -86,7 +89,7 @@ const createPlayer = () => {
 };
 
 createEnvironment();
-createFloor();
+createGround();
 createMesh();
 createPlayer();
 

@@ -38,7 +38,7 @@ export class PlayerAttackSystem extends System {
       weaponOffset.applyQuaternion(weaponWorldQuat);
       weaponWorldPos.add(weaponOffset);
 
-      debugMesh?.position.copy(weaponWorldPos);
+      debugMesh?.position.copy(weaponWorldPos); // TODO: remove this
       debugMesh?.quaternion.copy(weaponWorldQuat);
 
       collider.setTranslation(weaponWorldPos);
