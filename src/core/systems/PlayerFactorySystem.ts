@@ -87,7 +87,7 @@ export class PlayerFactorySystem extends System {
       capsule.add(armsMesh);
     }
 
-    this.entityManager.addComponents(entity, components);
+    entity.addComponents(components);
   }
 
   private createWeapon(player: Entity, armsMesh: THREE.Object3D): void {
@@ -102,7 +102,7 @@ export class PlayerFactorySystem extends System {
     const swordSize = box.getSize(new THREE.Vector3());
 
     const weapon = new Entity();
-    weapon.addComponents(
+    weapon.addComponents([
       new OwnerComponent(player),
       new WeaponComponent({ damageAmount: 10 }),
       new WeaponAnchorComponent(swordMesh, new THREE.Vector3(-0.01, 0.5, 0)), // TODO: maybe could be a part of Player entity
@@ -129,7 +129,7 @@ export class PlayerFactorySystem extends System {
           },
         },
       }),
-    );
+    ]);
 
     this.entityManager.addEntity(weapon);
   }

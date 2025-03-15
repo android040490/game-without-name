@@ -3,7 +3,6 @@ import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { MeshComponent } from "../components/MeshComponent";
-import { EntityManager } from "../managers/EntityManager";
 import {
   MeshBuilder,
   MeshConfig,
@@ -14,14 +13,12 @@ import { ResourcesManager } from "../managers/ResourcesManager";
 import { TextureComponent } from "../components/TextureComponent";
 
 export class MeshFactorySystem extends System {
-  private readonly entityManager: EntityManager;
   private readonly meshBuilder: MeshBuilder;
   private readonly resourcesManager: ResourcesManager;
 
   constructor(game: Game) {
     super(game);
 
-    this.entityManager = this.game.entityManager;
     this.resourcesManager = this.game.resourcesManager;
     this.meshBuilder = new MeshBuilder();
   }
@@ -49,7 +46,7 @@ export class MeshFactorySystem extends System {
     }
     const mesh = this.meshBuilder.createMesh(config);
 
-    this.entityManager.addComponent(entity, new MeshComponent(mesh));
+    entity.addComponent(new MeshComponent(mesh));
   }
 
   private async setTexture(

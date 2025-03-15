@@ -3,7 +3,6 @@ import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { MeshComponent } from "../components/MeshComponent";
-import { EntityManager } from "../managers/EntityManager";
 import { ResourcesManager } from "../managers/ResourcesManager";
 import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
 import { PhysicsComponent } from "../components/PhysicsComponent";
@@ -13,14 +12,12 @@ import { MeshBuilder } from "../factories/MeshBuilder";
 import { InteractionGroups } from "../constants/InteractionGroups";
 
 export class CharacterFactorySystem extends System {
-  private readonly entityManager: EntityManager;
   private readonly resourcesManager: ResourcesManager;
   private readonly meshBuilder: MeshBuilder;
 
   constructor(game: Game) {
     super(game);
 
-    this.entityManager = this.game.entityManager;
     this.resourcesManager = this.game.resourcesManager;
     this.meshBuilder = new MeshBuilder();
   }
@@ -79,7 +76,7 @@ export class CharacterFactorySystem extends System {
       capsule.add(modelMesh);
     }
 
-    this.entityManager.addComponents(entity, components);
+    entity.addComponents(components);
   }
 
   private createCapsule(

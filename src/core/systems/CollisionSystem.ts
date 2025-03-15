@@ -9,18 +9,15 @@ import {
   COLLISION_HANDLERS,
   CollisionHandler,
 } from "../constants/CollisionHandlers";
-import { EntityManager } from "../managers/EntityManager";
 
 export class CollisionSystem extends System {
   private readonly physicsManager: PhysicsManager;
-  private readonly entityManager: EntityManager;
   private colliderToEntityMap: Map<Collider, Entity> = new Map();
 
   constructor(game: Game) {
     super(game);
 
     this.physicsManager = this.game.physicsManager;
-    this.entityManager = this.game.entityManager;
   }
 
   appliesTo(entity: Entity): boolean {
@@ -83,11 +80,11 @@ export class CollisionSystem extends System {
     if (
       this.isMatch(entity1, entity2, requiredComponents1, requiredComponents2)
     ) {
-      handler(entity1, entity2, this.entityManager);
+      handler(entity1, entity2);
     } else if (
       this.isMatch(entity2, entity1, requiredComponents1, requiredComponents2)
     ) {
-      handler(entity2, entity1, this.entityManager);
+      handler(entity2, entity1);
     }
   }
 

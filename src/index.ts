@@ -28,7 +28,7 @@ const createEnvironment = () => {
 // Ground Entity
 const createGround = () => {
   const entity = new Entity();
-  entity.addComponents(
+  entity.addComponents([
     new MeshConfigComponent({
       geometry: { type: "cylinder", params: [50, 50, 0.5] },
       material: { type: "standard", params: { color: "#5b4" } },
@@ -43,7 +43,7 @@ const createGround = () => {
         rigidBodyType: "fixed",
       },
     }),
-  );
+  ]);
 
   game.entityManager.addEntity(entity);
 };
@@ -51,7 +51,7 @@ const createGround = () => {
 // Mesh Entity
 const createMesh = () => {
   const entity = new Entity();
-  entity.addComponents(
+  entity.addComponents([
     new MeshConfigComponent({
       geometry: { type: "box", params: [1, 1, 1] },
       material: { type: "standard", params: undefined },
@@ -75,14 +75,14 @@ const createMesh = () => {
         rigidBodyType: "dynamic",
       },
     }),
-  );
+  ]);
 
   game.entityManager.addEntity(entity);
 };
 
 const createPlayer = () => {
   const entity = new Entity();
-  entity.addComponents(
+  entity.addComponents([
     new PositionComponent(3, 10, -4),
     new RotationComponent(0, 0, 0, 1),
     new CharacterMovementComponent(),
@@ -91,7 +91,7 @@ const createPlayer = () => {
     new PointerLockControlsComponent(),
     new PlayerComponent(),
     new PlayerControlComponent(),
-  );
+  ]);
 
   game.entityManager.addEntity(entity);
 };
