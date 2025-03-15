@@ -26,6 +26,10 @@ export class Entity {
     }
   }
 
+  public removeComponent(componentType: Constructor<any>): void {
+    this.components.delete(componentType.name);
+  }
+
   public hasComponent(componentType: Constructor<any>): boolean {
     return this.components.has(componentType.name);
   }

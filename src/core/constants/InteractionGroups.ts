@@ -5,18 +5,30 @@ export class InteractionGroups {
     CollisionGroups.GROUND,
     CollisionGroups.ALL,
   );
+
   static readonly PLAYER = this.createMask(
     CollisionGroups.PLAYER,
-    CollisionGroups.GROUND,
+    CollisionGroups.GROUND |
+      CollisionGroups.WALL |
+      CollisionGroups.DYNAMIC_OBJECT |
+      CollisionGroups.ENEMY,
   );
+
   static readonly PLAYER_WEAPON = this.createMask(
-    CollisionGroups.PLAYER | CollisionGroups.WEAPON,
-    CollisionGroups.ENEMY,
+    CollisionGroups.WEAPON,
+    CollisionGroups.ENEMY | CollisionGroups.DYNAMIC_OBJECT,
   );
+
   static readonly ENEMY = this.createMask(
     CollisionGroups.ENEMY,
-    CollisionGroups.GROUND | CollisionGroups.WEAPON,
+    CollisionGroups.GROUND |
+      CollisionGroups.WALL |
+      CollisionGroups.ENEMY |
+      CollisionGroups.PLAYER |
+      CollisionGroups.WEAPON |
+      CollisionGroups.DYNAMIC_OBJECT,
   );
+
   static readonly DYNAMIC_OBJECT = this.createMask(
     CollisionGroups.DYNAMIC_OBJECT,
     CollisionGroups.ALL,

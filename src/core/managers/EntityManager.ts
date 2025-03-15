@@ -3,6 +3,7 @@ import { EntityAdded } from "../event/EntityAdded";
 import { EntityRemoved } from "../event/EntityRemoved";
 import eventBus, { EventBus } from "../event/EventBus";
 import { Entity } from "../models/Entity";
+import { Constructor } from "../type-utils/constructor";
 
 export class EntityManager {
   private readonly entities: Map<string, Entity> = new Map();
@@ -31,6 +32,11 @@ export class EntityManager {
     components.forEach((component) => {
       entity.addComponent(component);
     });
+    this.eventBus.emit(new EntityUpdated(entity));
+  }
+
+  removeComponent(entity: Entity, componentType: Constructor<any>): void {
+    entity.removeComponent(componentType);
     this.eventBus.emit(new EntityUpdated(entity));
   }
 }
