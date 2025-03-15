@@ -40,7 +40,7 @@ interface Capsule {
   height: number;
 }
 
-interface ColliderParams {
+interface ColliderConfig {
   shape: BoxShape | SphereShape | CylinderShape | Capsule;
   density?: number;
   restitution?: number;
@@ -56,14 +56,17 @@ type RigidBodyType =
   | "kinematicVelocityBased"
   | "kinematicPositionBased";
 
-interface RigidBodyParams {
+interface RigidBodyConfig {
   rigidBodyType: RigidBodyType;
   lockRotation?: boolean;
   lockTranslation?: boolean;
   gravityScale?: number;
 }
 
-export type PhysicalObjectParams = RigidBodyParams & ColliderParams;
+export interface PhysicalObjectConfig {
+  rigidBodyConfig?: RigidBodyConfig;
+  colliderConfig: ColliderConfig;
+}
 
 export class PhysicsManager {
   private _instance: World;
@@ -87,14 +90,19 @@ export class PhysicsManager {
     this._instance.step(this._eventQueue);
   }
 
-  createObject(params: PhysicalObjectParams): {
+  createObject(config: PhysicalObjectConfig): {
     collider: Collider;
-    rigidBody: RigidBody;
+    rigidBody?: RigidBody;
   } {
-    const rigidBodyDesc = this.createRigidBodyDesc(params);
-    const rigidBody = this._instance.createRigidBody(rigidBodyDesc);
+    const { colliderConfig, rigidBodyConfig } = config;
+    let rigidBody: RigidBody | undefined;
 
-    const collider: Collider = this.createCollider(params, rigidBody);
+    if (rigidBodyConfig) {
+      const rigidBodyDesc = this.createRigidBodyDesc(rigidBodyConfig);
+      rigidBody = this._instance.createRigidBody(rigidBodyDesc);
+    }
+
+    const collider: Collider = this.createCollider(colliderConfig, rigidBody);
 
     return { collider, rigidBody };
   }
@@ -132,9 +140,9 @@ export class PhysicsManager {
     );
   }
 
-  private createRigidBodyDesc(params: RigidBodyParams): RigidBodyDesc {
+  private createRigidBodyDesc(config: RigidBodyConfig): RigidBodyDesc {
     const { rigidBodyType, lockRotation, gravityScale, lockTranslation } =
-      params;
+      config;
 
     let bodyDesc: RigidBodyDesc;
 
@@ -171,14 +179,14 @@ export class PhysicsManager {
     return bodyDesc;
   }
 
-  createCollider(params: ColliderParams, rigidBody?: RigidBody): Collider {
+  createCollider(config: ColliderConfig, rigidBody?: RigidBody): Collider {
     return this._instance.createCollider(
-      this.createColliderDesc(params),
+      this.createColliderDesc(config),
       rigidBody,
     );
   }
 
-  private createColliderDesc(params: ColliderParams): ColliderDesc {
+  private createColliderDesc(params: ColliderConfig): ColliderDesc {
     const {
       shape,
       density,

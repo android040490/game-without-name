@@ -10,26 +10,22 @@ import { GLTF } from "three/examples/jsm/Addons.js";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { MeshBuilder } from "../factories/MeshBuilder";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
-import { PhysicsManager } from "../managers/PhysicsManager";
-import { Renderer } from "../managers/Renderer";
-import { PlayerWeaponComponent } from "../components/PlayerWeaponComponent";
+import { WeaponComponent } from "../components/WeaponComponent";
 import { ActiveEvents } from "@dimforge/rapier3d";
 import { InteractionGroups } from "../constants/InteractionGroups";
+import { WeaponAnchorComponent } from "../components/WeaponAnchorComponent";
+import { MeshConfigComponent } from "../components/MeshConfigComponent";
 
 export class PlayerFactorySystem extends System {
   private readonly entityManager: EntityManager;
   private readonly resourcesManager: ResourcesManager;
   private readonly meshBuilder: MeshBuilder;
-  private readonly physicsManager: PhysicsManager;
-  private readonly renderer: Renderer;
 
   constructor(game: Game) {
     super(game);
 
     this.entityManager = this.game.entityManager;
     this.resourcesManager = this.game.resourcesManager;
-    this.physicsManager = this.game.physicsManager;
-    this.renderer = this.game.renderer;
     this.meshBuilder = new MeshBuilder();
   }
 
@@ -62,11 +58,15 @@ export class PlayerFactorySystem extends System {
     let components: object[] = [
       new MeshComponent(capsule),
       new PhysicsComponent({
-        shape: { type: "capsule", height: capsuleLength, radius },
-        density: 10,
-        rigidBodyType: "dynamic",
-        lockRotation: true,
-        collisionGroups: InteractionGroups.PLAYER,
+        colliderConfig: {
+          shape: { type: "capsule", height: capsuleLength, radius },
+          density: 10,
+          collisionGroups: InteractionGroups.PLAYER,
+        },
+        rigidBodyConfig: {
+          rigidBodyType: "dynamic",
+          lockRotation: true,
+        },
       }),
     ];
 
@@ -81,11 +81,7 @@ export class PlayerFactorySystem extends System {
         );
       }
 
-      const weaponComponent = this.createWeaponComponent(armsMesh);
-
-      if (weaponComponent) {
-        components.push(weaponComponent);
-      }
+      this.createWeapon(armsMesh);
 
       capsule.add(armsMesh);
     }
@@ -93,9 +89,7 @@ export class PlayerFactorySystem extends System {
     this.entityManager.addComponents(entity, components);
   }
 
-  private createWeaponComponent(
-    armsMesh: THREE.Object3D,
-  ): PlayerWeaponComponent | undefined {
+  private createWeapon(armsMesh: THREE.Object3D): void {
     const swordMesh = armsMesh.getObjectByName("Proto_sword");
 
     if (!swordMesh) {
@@ -106,32 +100,37 @@ export class PlayerFactorySystem extends System {
     const box = new THREE.Box3().setFromObject(swordMesh);
     const swordSize = box.getSize(new THREE.Vector3());
 
-    const collider = this.physicsManager.createCollider({
-      shape: {
-        type: "box",
-        sizes: { x: 0.05, y: swordSize.y, z: 0.05 },
-      },
-      sensor: true,
-      activeEvents: ActiveEvents.COLLISION_EVENTS,
-      collisionGroups: InteractionGroups.PLAYER_WEAPON,
-    });
-
-    const debugMesh = this.meshBuilder.createMesh({
-      geometry: {
-        type: "box",
-        params: [0.05, swordSize.y, 0.05],
-      },
-      material: {
-        type: "basic",
-        params: {
-          color: 0x00ff00,
-          wireframe: true,
+    const entity = new Entity();
+    entity.addComponents(
+      new WeaponComponent(),
+      new WeaponAnchorComponent(swordMesh, new THREE.Vector3(-0.01, 0.5, 0)),
+      new PhysicsComponent({
+        colliderConfig: {
+          shape: {
+            type: "box",
+            sizes: { x: 0.05, y: swordSize.y, z: 0.05 },
+          },
+          sensor: true,
+          activeEvents: ActiveEvents.COLLISION_EVENTS,
+          collisionGroups: InteractionGroups.PLAYER_WEAPON,
         },
-      },
-    });
-    this.renderer.scene.add(debugMesh);
+      }),
+      new MeshConfigComponent({
+        geometry: {
+          type: "box",
+          params: [0.05, swordSize.y, 0.05],
+        },
+        material: {
+          type: "basic",
+          params: {
+            color: 0x00ff00,
+            wireframe: true,
+          },
+        },
+      }),
+    );
 
-    return new PlayerWeaponComponent(swordMesh, collider, debugMesh);
+    this.entityManager.addEntity(entity);
   }
 
   private createCapsule(

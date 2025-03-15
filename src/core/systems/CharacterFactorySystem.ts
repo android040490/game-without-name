@@ -53,11 +53,15 @@ export class CharacterFactorySystem extends System {
     let components: object[] = [
       new MeshComponent(capsule),
       new PhysicsComponent({
-        shape: { type: "capsule", height: capsuleLength, radius },
-        density,
-        rigidBodyType: "dynamic",
-        lockRotation: true,
-        collisionGroups: InteractionGroups.ENEMY,
+        colliderConfig: {
+          shape: { type: "capsule", height: capsuleLength, radius },
+          density,
+          collisionGroups: InteractionGroups.ENEMY,
+        },
+        rigidBodyConfig: {
+          rigidBodyType: "dynamic",
+          lockRotation: true,
+        },
       }),
     ];
 

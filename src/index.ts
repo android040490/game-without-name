@@ -35,9 +35,13 @@ const createGround = () => {
     }),
     new PositionComponent(0, 0, 0),
     new PhysicsComponent({
-      shape: { type: "cylinder", radius: 50, height: 0.5 },
-      rigidBodyType: "fixed",
-      collisionGroups: InteractionGroups.GROUND,
+      colliderConfig: {
+        shape: { type: "cylinder", radius: 50, height: 0.5 },
+        collisionGroups: InteractionGroups.GROUND,
+      },
+      rigidBodyConfig: {
+        rigidBodyType: "fixed",
+      },
     }),
   );
 
@@ -61,11 +65,15 @@ const createMesh = () => {
     new RotationComponent(0, 0, 1, 2),
     new PositionComponent(-10, 5, 15),
     new PhysicsComponent({
-      shape: { type: "box", sizes: { x: 1, y: 1, z: 1 } },
-      density: 5,
-      rigidBodyType: "dynamic",
-      restitution: 0.2,
-      collisionGroups: InteractionGroups.DYNAMIC_OBJECT,
+      colliderConfig: {
+        shape: { type: "box", sizes: { x: 1, y: 1, z: 1 } },
+        collisionGroups: InteractionGroups.DYNAMIC_OBJECT,
+        density: 5,
+        restitution: 0.2,
+      },
+      rigidBodyConfig: {
+        rigidBodyType: "dynamic",
+      },
     }),
   );
 
