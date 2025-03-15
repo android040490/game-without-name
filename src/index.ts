@@ -11,7 +11,8 @@ import { PointerLockControlsComponent } from "./core/components/PointerLockContr
 import { PlayerComponent } from "./core/components/PlayerComponent";
 import { CharacterMovementComponent } from "./core/components/CharacterMovementComponent";
 import { PlayerControlComponent } from "./core/components/PlayerControlComponent";
-import { CharacterConfigComponent } from "./core/components/CharacterConfigComponent";
+import { PlayerConfigComponent } from "./core/components/PlayerConfigComponent";
+import { InteractionGroups } from "./core/constants/InteractionGroups";
 
 const game = new Game(
   document.querySelector("canvas.webgl") as HTMLCanvasElement,
@@ -24,8 +25,8 @@ const createEnvironment = () => {
   game.entityManager.addEntity(entity);
 };
 
-// Floor Entity
-const createFloor = () => {
+// Ground Entity
+const createGround = () => {
   const entity = new Entity();
   entity.addComponents(
     new MeshConfigComponent({
@@ -34,8 +35,13 @@ const createFloor = () => {
     }),
     new PositionComponent(0, 0, 0),
     new PhysicsComponent({
-      shape: { type: "cylinder", radius: 50, height: 0.5 },
-      rigidBodyType: "fixed",
+      colliderConfig: {
+        shape: { type: "cylinder", radius: 50, height: 0.5 },
+        collisionGroups: InteractionGroups.GROUND,
+      },
+      rigidBodyConfig: {
+        rigidBodyType: "fixed",
+      },
     }),
   );
 
@@ -59,10 +65,15 @@ const createMesh = () => {
     new RotationComponent(0, 0, 1, 2),
     new PositionComponent(-10, 5, 15),
     new PhysicsComponent({
-      shape: { type: "box", sizes: { x: 1, y: 1, z: 1 } },
-      density: 5,
-      rigidBodyType: "dynamic",
-      restitution: 0.2,
+      colliderConfig: {
+        shape: { type: "box", sizes: { x: 1, y: 1, z: 1 } },
+        collisionGroups: InteractionGroups.DYNAMIC_OBJECT,
+        density: 5,
+        restitution: 0.2,
+      },
+      rigidBodyConfig: {
+        rigidBodyType: "dynamic",
+      },
     }),
   );
 
@@ -75,8 +86,8 @@ const createPlayer = () => {
     new PositionComponent(3, 10, -4),
     new RotationComponent(0, 0, 0, 1),
     new CharacterMovementComponent(),
-    new CharacterConfigComponent(),
-    new CameraComponent({ offsetHeight: 0.5 }),
+    new PlayerConfigComponent({ armsModelPath: "models/arms.glb" }),
+    new CameraComponent({ offsetHeight: 0.8 }),
     new PointerLockControlsComponent(),
     new PlayerComponent(),
     new PlayerControlComponent(),
@@ -86,7 +97,7 @@ const createPlayer = () => {
 };
 
 createEnvironment();
-createFloor();
+createGround();
 createMesh();
 createPlayer();
 

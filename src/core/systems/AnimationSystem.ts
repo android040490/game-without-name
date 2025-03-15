@@ -1,5 +1,4 @@
 import { AnimationComponent } from "../components/AnimationComponent";
-import { CharacterStateComponent } from "../components/CharacterStateComponent";
 import { Game } from "../Game";
 import { TimeManager } from "../managers/TimeManager";
 import { Entity } from "../models/Entity";
@@ -15,7 +14,7 @@ export class AnimationSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponents(AnimationComponent, CharacterStateComponent);
+    return entity.hasComponent(AnimationComponent);
   }
 
   addEntity(entity: Entity) {
@@ -29,7 +28,13 @@ export class AnimationSystem extends System {
       return;
     }
 
-    const { currentAction, currentActionName, animationActions } = component;
+    const {
+      currentAction,
+      currentActionName,
+      animationActions,
+      repetitions,
+      nextAnimation,
+    } = component;
 
     if (currentActionName && !currentAction) {
       // start first animation
@@ -39,26 +44,36 @@ export class AnimationSystem extends System {
       // transition between animations
       const newAction = animationActions?.get(currentActionName);
       const oldAction = currentAction;
-      newAction?.reset().play().crossFadeFrom(oldAction, 1, true);
+      newAction?.reset().play().crossFadeFrom(oldAction, 0.2, true);
       component.currentAction = newAction;
     } else if (!currentActionName) {
       // stop animations
       currentAction?.reset().fadeOut(1);
       component.currentAction = undefined;
     }
+
+    if (component.currentAction) {
+      component.currentAction.repetitions = repetitions;
+      component.currentAction.clampWhenFinished = true;
+    }
+
+    if (nextAnimation) {
+      component.currentAction?.getMixer().addEventListener("finished", () => {
+        component.animation = nextAnimation;
+      });
+    }
   }
 
   update(): void {
     for (const [_, entity] of this.entities) {
-      const animationComponent = entity.getComponent(AnimationComponent)!;
-      const { currentState } = entity.getComponent(CharacterStateComponent)!;
+      const { animationMixer, currentAction, currentActionName } =
+        entity.getComponent(AnimationComponent) ?? {};
 
-      if (animationComponent.currentActionName !== currentState.animation) {
-        animationComponent.currentActionName = currentState.animation;
+      if (currentActionName !== currentAction?.getClip().name) {
         this.play(entity);
       }
 
-      animationComponent.animationMixer?.update(this.timeManager.timeStep);
+      animationMixer?.update(this.timeManager.timeStep);
     }
   }
 }

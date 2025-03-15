@@ -1,6 +1,7 @@
 import {
   Collider,
   KinematicCharacterController,
+  QueryFilterFlags,
   RigidBody,
 } from "@dimforge/rapier3d";
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
@@ -60,6 +61,7 @@ export class CharacterMovementSystem extends System {
     this.characterController.computeColliderMovement(
       collider,
       { x: position.x, y: 0, z: position.z }, // The collider we would like to move.
+      QueryFilterFlags.EXCLUDE_SENSORS,
     );
 
     // Read the result.

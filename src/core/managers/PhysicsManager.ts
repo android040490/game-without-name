@@ -1,7 +1,9 @@
 const RAPIER = await import("@dimforge/rapier3d");
 import {
+  ActiveEvents,
   Collider,
   ColliderDesc,
+  EventQueue,
   InteractionGroups,
   KinematicCharacterController,
   QueryFilterFlags,
@@ -38,11 +40,14 @@ interface Capsule {
   height: number;
 }
 
-interface ColliderParams {
+interface ColliderConfig {
   shape: BoxShape | SphereShape | CylinderShape | Capsule;
   density?: number;
   restitution?: number;
   friction?: number;
+  sensor?: boolean;
+  collisionGroups?: number;
+  activeEvents?: ActiveEvents;
 }
 
 type RigidBodyType =
@@ -51,42 +56,53 @@ type RigidBodyType =
   | "kinematicVelocityBased"
   | "kinematicPositionBased";
 
-interface RigidBodyParams {
+interface RigidBodyConfig {
   rigidBodyType: RigidBodyType;
   lockRotation?: boolean;
   lockTranslation?: boolean;
   gravityScale?: number;
 }
 
-export type PhysicalObjectParams = RigidBodyParams & ColliderParams;
+export interface PhysicalObjectConfig {
+  rigidBodyConfig?: RigidBodyConfig;
+  colliderConfig: ColliderConfig;
+}
 
 export class PhysicsManager {
   private _instance: World;
+  private _eventQueue: EventQueue;
 
   constructor() {
     this._instance = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+    this._eventQueue = new RAPIER.EventQueue(true);
   }
 
   get instance(): World {
     return this._instance;
   }
 
-  update(deltaTime: number): void {
-    this._instance.timestep = deltaTime;
-    this._instance.step();
+  get eventQueue(): EventQueue {
+    return this._eventQueue;
   }
 
-  createObject(params: PhysicalObjectParams): {
-    collider: Collider;
-    rigidBody: RigidBody;
-  } {
-    const rigidBodyDesc = this.createRigidBodyDesc(params);
-    const rigidBody = this._instance.createRigidBody(rigidBodyDesc);
+  update(deltaTime: number): void {
+    this._instance.timestep = deltaTime;
+    this._instance.step(this._eventQueue);
+  }
 
-    const collider: Collider = this._instance.createCollider(
-      this.createColliderDesc(params),
-      rigidBody,
-    );
+  createObject(config: PhysicalObjectConfig): {
+    collider: Collider;
+    rigidBody?: RigidBody;
+  } {
+    const { colliderConfig, rigidBodyConfig } = config;
+    let rigidBody: RigidBody | undefined;
+
+    if (rigidBodyConfig) {
+      const rigidBodyDesc = this.createRigidBodyDesc(rigidBodyConfig);
+      rigidBody = this._instance.createRigidBody(rigidBodyDesc);
+    }
+
+    const collider: Collider = this.createCollider(colliderConfig, rigidBody);
 
     return { collider, rigidBody };
   }
@@ -124,9 +140,9 @@ export class PhysicsManager {
     );
   }
 
-  private createRigidBodyDesc(params: RigidBodyParams): RigidBodyDesc {
+  private createRigidBodyDesc(config: RigidBodyConfig): RigidBodyDesc {
     const { rigidBodyType, lockRotation, gravityScale, lockTranslation } =
-      params;
+      config;
 
     let bodyDesc: RigidBodyDesc;
 
@@ -163,8 +179,23 @@ export class PhysicsManager {
     return bodyDesc;
   }
 
-  private createColliderDesc(params: ColliderParams): ColliderDesc {
-    const { shape, density, restitution, friction } = params;
+  createCollider(config: ColliderConfig, rigidBody?: RigidBody): Collider {
+    return this._instance.createCollider(
+      this.createColliderDesc(config),
+      rigidBody,
+    );
+  }
+
+  private createColliderDesc(params: ColliderConfig): ColliderDesc {
+    const {
+      shape,
+      density,
+      restitution,
+      friction,
+      sensor,
+      collisionGroups,
+      activeEvents,
+    } = params;
     let colliderDesc: ColliderDesc;
 
     switch (shape.type) {
@@ -199,6 +230,15 @@ export class PhysicsManager {
     }
     if (friction) {
       colliderDesc.friction = friction;
+    }
+    if (sensor) {
+      colliderDesc.setSensor(true);
+    }
+    if (collisionGroups) {
+      colliderDesc.setCollisionGroups(collisionGroups);
+    }
+    if (activeEvents) {
+      colliderDesc.setActiveEvents(activeEvents);
     }
 
     return colliderDesc;

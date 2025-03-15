@@ -10,6 +10,7 @@ import { PhysicsComponent } from "../components/PhysicsComponent";
 import { GLTF, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { MeshBuilder } from "../factories/MeshBuilder";
+import { InteractionGroups } from "../constants/InteractionGroups";
 
 export class CharacterFactorySystem extends System {
   private readonly entityManager: EntityManager;
@@ -52,10 +53,15 @@ export class CharacterFactorySystem extends System {
     let components: object[] = [
       new MeshComponent(capsule),
       new PhysicsComponent({
-        shape: { type: "capsule", height: capsuleLength, radius },
-        density,
-        rigidBodyType: "dynamic",
-        lockRotation: true,
+        colliderConfig: {
+          shape: { type: "capsule", height: capsuleLength, radius },
+          density,
+          collisionGroups: InteractionGroups.ENEMY,
+        },
+        rigidBodyConfig: {
+          rigidBodyType: "dynamic",
+          lockRotation: true,
+        },
       }),
     ];
 

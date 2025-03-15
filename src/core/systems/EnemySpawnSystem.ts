@@ -8,6 +8,7 @@ import { EntityManager } from "../managers/EntityManager";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { CharacterStateComponent } from "../components/CharacterStateComponent";
+import { EnemyStates } from "../constants/EnemyStates";
 
 export class EnemySpawnSystem extends System {
   private readonly entityManager: EntityManager;
@@ -40,7 +41,7 @@ export class EnemySpawnSystem extends System {
     entity.addComponent(new PositionComponent(0, 4, 0));
     entity.addComponent(new RotationComponent(0, 0, 0, 1));
     entity.addComponent(new CharacterMovementComponent());
-    entity.addComponent(new CharacterStateComponent("idle"));
+    entity.addComponent(new CharacterStateComponent(EnemyStates.Idle));
     this.entityManager.addEntity(entity);
   }
 }
