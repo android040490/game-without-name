@@ -4,12 +4,17 @@ import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { PositionComponent } from "../components/PositionComponent";
 import { RotationComponent } from "../components/RotationComponent";
-import { VelocityComponent } from "../components/VelocityComponent";
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { Game } from "../Game";
 import { TimeManager } from "../managers/TimeManager";
 import { EventBus } from "../event/EventBus";
 import { PlayerPositionUpdated } from "../event/PlayerPositionUpdated";
+import {
+  CharacterState,
+  CharacterStateComponent,
+} from "../components/CharacterStateComponent";
+import { EnemyStates } from "../constants/EnemyStates";
+import { AnimationComponent } from "../components/AnimationComponent";
 
 export class EnemyControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -29,7 +34,11 @@ export class EnemyControlSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponents(EnemyComponent, CharacterMovementComponent);
+    return entity.hasComponents(
+      EnemyComponent,
+      CharacterMovementComponent,
+      CharacterStateComponent,
+    );
   }
 
   update(): void {
@@ -43,7 +52,15 @@ export class EnemyControlSystem extends System {
       const characterMovementComponent = entity.getComponent(
         CharacterMovementComponent,
       )!;
-      const { velocity } = entity.getComponent(VelocityComponent) ?? {};
+      const stateComponent = entity.getComponent(CharacterStateComponent)!;
+      const animationComponent = entity.getComponent(AnimationComponent);
+      const newState = this.computeNextCharacterState(entity);
+      stateComponent.currentState = newState;
+      if (animationComponent) {
+        animationComponent.animation = newState.animation;
+      }
+
+      const { speed } = newState;
 
       if (position && rotation) {
         characterMovementComponent.rotation = this.computeNextRotation(
@@ -52,11 +69,11 @@ export class EnemyControlSystem extends System {
           rotation,
         );
       }
-      if (position && velocity) {
+      if (position) {
         characterMovementComponent.position = this.computeNextPosition(
           this.targetDirection,
           position,
-          velocity,
+          speed,
         );
       }
     }
@@ -80,11 +97,21 @@ export class EnemyControlSystem extends System {
   private computeNextPosition(
     targetDirection: THREE.Vector3,
     position: THREE.Vector3,
-    velocity: number,
+    speed: number,
   ): THREE.Vector3 {
-    const delta = this.timeManager.delta / 1000;
+    const delta = this.timeManager.timeStep;
 
     const nextPosition = targetDirection.clone().sub(position).normalize();
-    return nextPosition.multiplyScalar(velocity * delta);
+    return nextPosition.multiplyScalar(speed * delta);
+  }
+
+  private computeNextCharacterState(entity: Entity): CharacterState {
+    const { currentState } = entity.getComponent(CharacterStateComponent)!;
+
+    if (currentState === EnemyStates.Idle) {
+      return EnemyStates.Walk;
+    }
+
+    return currentState;
   }
 }

@@ -14,7 +14,7 @@ export class CameraComponent {
     const { offsetDistance = 0.1, offsetHeight = 1 } = config ?? {};
 
     this.camera = new PerspectiveCamera(
-      50,
+      70,
       window.innerWidth / window.innerHeight,
       0.1,
       1000,

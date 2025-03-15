@@ -2,7 +2,7 @@ import { MeshConfigComponent } from "../components/MeshConfigComponent";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
-import { RenderComponent } from "../components/RenderComponent";
+import { MeshComponent } from "../components/MeshComponent";
 import { EntityManager } from "../managers/EntityManager";
 import {
   MeshBuilder,
@@ -13,7 +13,7 @@ import {
 import { ResourcesManager } from "../managers/ResourcesManager";
 import { TextureComponent } from "../components/TextureComponent";
 
-export class MeshBuilderSystem extends System {
+export class MeshFactorySystem extends System {
   private readonly entityManager: EntityManager;
   private readonly meshBuilder: MeshBuilder;
   private readonly resourcesManager: ResourcesManager;
@@ -49,7 +49,7 @@ export class MeshBuilderSystem extends System {
     }
     const mesh = this.meshBuilder.createMesh(config);
 
-    this.entityManager.addComponent(entity, new RenderComponent(mesh));
+    this.entityManager.addComponent(entity, new MeshComponent(mesh));
   }
 
   private async setTexture(

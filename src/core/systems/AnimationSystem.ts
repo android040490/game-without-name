@@ -28,7 +28,13 @@ export class AnimationSystem extends System {
       return;
     }
 
-    const { currentAction, currentActionName, animationActions } = component;
+    const {
+      currentAction,
+      currentActionName,
+      animationActions,
+      repetitions,
+      nextAnimation,
+    } = component;
 
     if (currentActionName && !currentAction) {
       // start first animation
@@ -38,12 +44,23 @@ export class AnimationSystem extends System {
       // transition between animations
       const newAction = animationActions?.get(currentActionName);
       const oldAction = currentAction;
-      newAction?.reset().play().crossFadeFrom(oldAction, 1, true);
+      newAction?.reset().play().crossFadeFrom(oldAction, 0.2, true);
       component.currentAction = newAction;
     } else if (!currentActionName) {
       // stop animations
       currentAction?.reset().fadeOut(1);
       component.currentAction = undefined;
+    }
+
+    if (component.currentAction) {
+      component.currentAction.repetitions = repetitions;
+      component.currentAction.clampWhenFinished = true;
+    }
+
+    if (nextAnimation) {
+      component.currentAction?.getMixer().addEventListener("finished", () => {
+        component.animation = nextAnimation;
+      });
     }
   }
 
@@ -56,7 +73,7 @@ export class AnimationSystem extends System {
         this.play(entity);
       }
 
-      animationMixer?.update(this.timeManager.delta * 0.001);
+      animationMixer?.update(this.timeManager.timeStep);
     }
   }
 }

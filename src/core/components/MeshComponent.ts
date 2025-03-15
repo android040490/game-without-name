@@ -1,5 +1,5 @@
 import * as THREE from "three";
 
-export class RenderComponent {
+export class MeshComponent {
   constructor(public object: THREE.Object3D) {}
 }

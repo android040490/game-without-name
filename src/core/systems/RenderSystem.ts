@@ -3,7 +3,7 @@ import { System } from "../models/System";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { Renderer } from "../managers/Renderer";
-import { RenderComponent } from "../components/RenderComponent";
+import { MeshComponent } from "../components/MeshComponent";
 import { PositionComponent } from "../components/PositionComponent";
 import { RotationComponent } from "../components/RotationComponent";
 
@@ -17,12 +17,12 @@ export class RenderSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponent(RenderComponent);
+    return entity.hasComponent(MeshComponent);
   }
 
   removeEntity(entity: Entity): void {
     super.removeEntity(entity);
-    const { object } = entity.getComponent(RenderComponent) ?? {};
+    const { object } = entity.getComponent(MeshComponent) ?? {};
 
     if (object) {
       object.traverse((child) => {
@@ -65,7 +65,7 @@ export class RenderSystem extends System {
 
   addEntity(entity: Entity): void {
     super.addEntity(entity);
-    const component = entity.getComponent(RenderComponent);
+    const component = entity.getComponent(MeshComponent);
     if (component?.object) {
       this.renderer.scene.add(component.object);
     }
@@ -75,7 +75,7 @@ export class RenderSystem extends System {
     for (const [_, entity] of this.entities) {
       const { position } = entity.getComponent(PositionComponent) ?? {};
       const { rotation } = entity.getComponent(RotationComponent) ?? {};
-      const { object } = entity.getComponent(RenderComponent) ?? {};
+      const { object } = entity.getComponent(MeshComponent) ?? {};
 
       if (position) {
         object?.position.copy(position);

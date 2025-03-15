@@ -9,6 +9,9 @@ import { CharacterMovementComponent } from "../components/CharacterMovementCompo
 import { Collider, RigidBody } from "@dimforge/rapier3d";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { PlayerControlComponent } from "../components/PlayerControlComponent";
+import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
+import { AnimationComponent } from "../components/AnimationComponent";
+import { PlayerAnimations } from "../constants/PlayerAnimations";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -19,6 +22,7 @@ export class PlayerControlSystem extends System {
   private moveRight = false;
   private jumpInitiated = false;
   private accelerate = false;
+  private attackInitiated = false;
 
   constructor(game: Game) {
     super(game);
@@ -27,12 +31,14 @@ export class PlayerControlSystem extends System {
     this.physicsManager = game.physicsManager;
 
     this.handleKeyboardEvent = this.handleKeyboardEvent.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
   appliesTo(entity: Entity): boolean {
     return entity.hasComponents(
       PlayerControlComponent,
       CharacterMovementComponent,
+      PlayerConfigComponent,
       PhysicsComponent, // TODO: maybe to move the check for this component to the add entity method
       RotationComponent, // TODO: maybe to move the check for this component to the add entity method
     );
@@ -58,10 +64,12 @@ export class PlayerControlSystem extends System {
   update(): void {
     for (const [_, entity] of this.entities) {
       const { rigidBody, collider } = entity.getComponent(PhysicsComponent)!;
+      const animationComponent = entity.getComponent(AnimationComponent);
       const { rotation } = entity.getComponent(RotationComponent)!;
       const characterMovementComponent = entity.getComponent(
         CharacterMovementComponent,
       )!;
+      const { height } = entity.getComponent(PlayerConfigComponent)!;
       const player = entity.getComponent(PlayerControlComponent)!;
 
       if (!collider || !rigidBody) {
@@ -75,10 +83,17 @@ export class PlayerControlSystem extends System {
         rotation,
       );
 
-      if (this.jumpInitiated && this.detectGround(rigidBody, collider)) {
+      if (
+        this.jumpInitiated &&
+        this.detectGround(rigidBody, collider, height)
+      ) {
         this.jump(rigidBody);
       }
       this.jumpInitiated = false;
+
+      if (this.attackInitiated && animationComponent) {
+        this.attack(animationComponent);
+      }
     }
   }
 
@@ -93,7 +108,11 @@ export class PlayerControlSystem extends System {
     );
   }
 
-  private detectGround(rigidBody: RigidBody, collider: Collider): boolean {
+  private detectGround(
+    rigidBody: RigidBody,
+    collider: Collider,
+    height: number,
+  ): boolean {
     const position = rigidBody.translation();
 
     const hit = this.physicsManager.castRay(
@@ -103,7 +122,7 @@ export class PlayerControlSystem extends System {
         y: -1,
         z: 0.0,
       },
-      1, // TODO: get half the height of the body so as not to have this value hardcoded
+      height / 2, // get half the height of the body
       true,
       undefined,
       undefined,
@@ -119,7 +138,7 @@ export class PlayerControlSystem extends System {
   ): THREE.Vector3 {
     const { velocity, speed, accelerationFactor, decelerationRate } = player;
 
-    const delta = this.timeManager.delta / 1000;
+    const delta = this.timeManager.timeStep;
     velocity.lerp(new THREE.Vector3(0, 0, 0), decelerationRate * delta);
 
     // Compute movement direction
@@ -148,11 +167,13 @@ export class PlayerControlSystem extends System {
   private setListeners(): void {
     document.addEventListener("keydown", this.handleKeyboardEvent);
     document.addEventListener("keyup", this.handleKeyboardEvent);
+    document.addEventListener("click", this.handleClick);
   }
 
   private removeListeners(): void {
     document.removeEventListener("keydown", this.handleKeyboardEvent);
     document.removeEventListener("keyup", this.handleKeyboardEvent);
+    document.removeEventListener("click", this.handleClick);
   }
 
   private handleKeyboardEvent(event: KeyboardEvent): void {
@@ -186,5 +207,20 @@ export class PlayerControlSystem extends System {
       case "ShiftLeft":
         this.accelerate = isKeyDown;
     }
+  }
+
+  private handleClick(): void {
+    this.attackInitiated = true; // TODO: maybe create separate system PlayerAttackSystem
+  }
+
+  private attack(animationComponent: AnimationComponent): void {
+    this.attackInitiated = false;
+
+    const randomAttackAnimation =
+      PlayerAnimations.ATTACKS[
+        Math.floor(Math.random() * PlayerAnimations.ATTACKS.length)
+      ];
+
+    animationComponent.animation = randomAttackAnimation;
   }
 }
