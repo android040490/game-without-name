@@ -103,7 +103,7 @@ export class PlayerFactorySystem extends System {
     const entity = new Entity();
     entity.addComponents(
       new WeaponComponent(),
-      new WeaponAnchorComponent(swordMesh, new THREE.Vector3(-0.01, 0.5, 0)),
+      new WeaponAnchorComponent(swordMesh, new THREE.Vector3(-0.01, 0.5, 0)), // TODO: maybe could be a part of Player entity
       new PhysicsComponent({
         colliderConfig: {
           shape: {

@@ -9,7 +9,12 @@ import { Game } from "../Game";
 import { TimeManager } from "../managers/TimeManager";
 import { EventBus } from "../event/EventBus";
 import { PlayerPositionUpdated } from "../event/PlayerPositionUpdated";
-import { CharacterStateComponent } from "../components/CharacterStateComponent";
+import {
+  CharacterState,
+  CharacterStateComponent,
+} from "../components/CharacterStateComponent";
+import { EnemyStates } from "../constants/EnemyStates";
+import { AnimationComponent } from "../components/AnimationComponent";
 
 export class EnemyControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -47,9 +52,15 @@ export class EnemyControlSystem extends System {
       const characterMovementComponent = entity.getComponent(
         CharacterMovementComponent,
       )!;
-      const {
-        currentState: { speed },
-      } = entity.getComponent(CharacterStateComponent)!;
+      const stateComponent = entity.getComponent(CharacterStateComponent)!;
+      const animationComponent = entity.getComponent(AnimationComponent);
+      const newState = this.computeNextCharacterState(entity);
+      stateComponent.currentState = newState;
+      if (animationComponent) {
+        animationComponent.animation = newState.animation;
+      }
+
+      const { speed } = newState;
 
       if (position && rotation) {
         characterMovementComponent.rotation = this.computeNextRotation(
@@ -92,5 +103,15 @@ export class EnemyControlSystem extends System {
 
     const nextPosition = targetDirection.clone().sub(position).normalize();
     return nextPosition.multiplyScalar(speed * delta);
+  }
+
+  private computeNextCharacterState(entity: Entity): CharacterState {
+    const { currentState } = entity.getComponent(CharacterStateComponent)!;
+
+    if (currentState === EnemyStates.Idle) {
+      return EnemyStates.Walk;
+    }
+
+    return currentState;
   }
 }
