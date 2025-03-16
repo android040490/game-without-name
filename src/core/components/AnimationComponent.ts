@@ -7,8 +7,8 @@ import {
 
 export interface AnimationData<Key = string> {
   actionName: Key;
-  nextAnimation?: AnimationData<Key>;
   repetitions?: number;
+  timeScale?: number;
 }
 
 export class AnimationComponent {
@@ -16,8 +16,9 @@ export class AnimationComponent {
   public readonly animationActions: Map<string, AnimationAction> = new Map();
   public currentAction?: AnimationAction;
   public currentActionName?: string;
-  public nextAnimation?: AnimationData;
   public repetitions: number = Infinity;
+  public timeScale: number = 1;
+  public completeHandler?: () => void;
 
   constructor(
     model: Object3D,
@@ -34,13 +35,19 @@ export class AnimationComponent {
     });
 
     this.currentActionName = currentActionName;
+
+    this.handleComplete = this.handleComplete.bind(this);
   }
 
   set animation(value: AnimationData) {
-    const { actionName, nextAnimation, repetitions = Infinity } = value;
+    const { actionName, repetitions = Infinity, timeScale = 1 } = value;
 
     this.currentActionName = actionName;
-    this.nextAnimation = nextAnimation;
     this.repetitions = repetitions;
+    this.timeScale = timeScale;
+  }
+
+  public handleComplete(): void {
+    this.completeHandler?.();
   }
 }

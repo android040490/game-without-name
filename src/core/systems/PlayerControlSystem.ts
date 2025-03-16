@@ -222,5 +222,8 @@ export class PlayerControlSystem extends System {
       ];
 
     animationComponent.animation = randomAttackAnimation;
+    animationComponent.completeHandler = () => {
+      animationComponent.animation = PlayerAnimations.Idle;
+    };
   }
 }

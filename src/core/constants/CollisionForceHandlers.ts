@@ -22,11 +22,11 @@ export const COLLISION_FORCE_HANDLERS: CollisionForceHandler[] = [
       const { owner } = weapon.getComponent(OwnerComponent)!;
       const isPlayer = owner.hasComponent(PlayerComponent);
 
-      console.log("force", force);
       if (isPlayer) {
         const { damageAmount } = weapon.getComponent(WeaponComponent)!;
+        const damage = damageAmount * (force / 100000);
 
-        enemy.addComponent(new MakeDamageComponent(damageAmount));
+        enemy.addComponent(new MakeDamageComponent(damage));
       }
     },
   },

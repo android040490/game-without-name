@@ -1,3 +1,4 @@
+import { DamagedMarkerComponent } from "../components/DamagedMarkerComponent";
 import { DeadMarkerComponent } from "../components/DeadMarkerComponent";
 import { HealthComponent } from "../components/HealthComponent";
 import { MakeDamageComponent } from "../components/MakeDamageComponent";
@@ -20,6 +21,7 @@ export class DamageSystem extends System {
         entity.addComponent(new DeadMarkerComponent());
       }
 
+      entity.addComponent(new DamagedMarkerComponent());
       entity.removeComponent(MakeDamageComponent);
     }
   }

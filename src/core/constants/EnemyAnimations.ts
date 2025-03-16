@@ -1,6 +1,6 @@
 import { AnimationData } from "../components/AnimationComponent";
 
-export type EnemyAnimationKey = "idle" | "walk" | "run";
+export type EnemyAnimationKey = "idle" | "walk" | "run" | "reaction:hit";
 
 export interface EnemyAnimationData extends AnimationData<EnemyAnimationKey> {
   type: "attack" | "idle" | "movement";
@@ -18,5 +18,11 @@ export class EnemyAnimations {
   static readonly Run: EnemyAnimationData = {
     actionName: "run",
     type: "movement",
+  };
+  static readonly ReactionHit: EnemyAnimationData = {
+    actionName: "reaction:hit",
+    type: "idle",
+    repetitions: 1,
+    timeScale: 2,
   };
 }
