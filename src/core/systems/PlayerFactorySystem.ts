@@ -112,7 +112,7 @@ export class PlayerFactorySystem extends System {
             type: "box",
             sizes: { x: 0.05, y: swordSize.y, z: 0.05 },
           },
-          activeEvents: ActiveEvents.COLLISION_EVENTS,
+          activeEvents: ActiveEvents.CONTACT_FORCE_EVENTS,
           collisionGroups: InteractionGroups.PLAYER_WEAPON,
         },
       }),
