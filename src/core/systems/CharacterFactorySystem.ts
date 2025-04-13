@@ -10,6 +10,7 @@ import { GLTF, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { MeshBuilder } from "../factories/MeshBuilder";
 import { InteractionGroups } from "../constants/InteractionGroups";
+import { EnergyBarComponent } from "../components/EnergyBarComponent";
 
 export class CharacterFactorySystem extends System {
   private readonly resourcesManager: ResourcesManager;
@@ -60,6 +61,7 @@ export class CharacterFactorySystem extends System {
           lockRotation: true,
         },
       }),
+      new EnergyBarComponent(height / 2 + 0.1),
     ];
 
     if (modelPath) {

@@ -15,7 +15,7 @@ import {
 
 export class CollisionSystem extends System {
   private readonly physicsManager: PhysicsManager;
-  private colliderToEntityMap: Map<number, Entity> = new Map(); // TODO: maybe use handle as key instead of collider
+  private colliderToEntityMap: Map<number, Entity> = new Map();
 
   constructor(game: Game) {
     super(game);
