@@ -1,3 +1,12 @@
+interface WeaponConfig {
+  damageAmount: number;
+}
 export class WeaponComponent {
-  constructor() {}
+  public damageAmount: number;
+
+  constructor(config: WeaponConfig) {
+    const { damageAmount } = config;
+
+    this.damageAmount = damageAmount;
+  }
 }

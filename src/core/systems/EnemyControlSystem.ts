@@ -15,6 +15,8 @@ import {
 } from "../components/CharacterStateComponent";
 import { EnemyStates } from "../constants/EnemyStates";
 import { AnimationComponent } from "../components/AnimationComponent";
+import { DeadMarkerComponent } from "../components/DeadMarkerComponent";
+import { DamagedMarkerComponent } from "../components/DamagedMarkerComponent";
 
 export class EnemyControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -54,10 +56,22 @@ export class EnemyControlSystem extends System {
       )!;
       const stateComponent = entity.getComponent(CharacterStateComponent)!;
       const animationComponent = entity.getComponent(AnimationComponent);
+
+      if (stateComponent.currentState === EnemyStates.Dead) {
+        continue;
+      }
+
       const newState = this.computeNextCharacterState(entity);
       stateComponent.currentState = newState;
+
       if (animationComponent) {
         animationComponent.animation = newState.animation;
+
+        animationComponent.completeHandler = () => {
+          if (newState.nextState) {
+            stateComponent.currentState = newState.nextState;
+          }
+        };
       }
 
       const { speed } = newState;
@@ -107,6 +121,17 @@ export class EnemyControlSystem extends System {
 
   private computeNextCharacterState(entity: Entity): CharacterState {
     const { currentState } = entity.getComponent(CharacterStateComponent)!;
+    const isDead = entity.hasComponent(DeadMarkerComponent);
+    const isDamaged = entity.hasComponent(DamagedMarkerComponent);
+
+    if (isDead) {
+      return EnemyStates.Dead;
+    }
+
+    if (isDamaged) {
+      entity.removeComponent(DamagedMarkerComponent);
+      return EnemyStates.Damaged;
+    }
 
     if (currentState === EnemyStates.Idle) {
       return EnemyStates.Walk;

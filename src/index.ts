@@ -28,7 +28,7 @@ const createEnvironment = () => {
 // Ground Entity
 const createGround = () => {
   const entity = new Entity();
-  entity.addComponents(
+  entity.addComponents([
     new MeshConfigComponent({
       geometry: { type: "cylinder", params: [50, 50, 0.5] },
       material: { type: "standard", params: { color: "#5b4" } },
@@ -43,7 +43,7 @@ const createGround = () => {
         rigidBodyType: "fixed",
       },
     }),
-  );
+  ]);
 
   game.entityManager.addEntity(entity);
 };
@@ -51,9 +51,9 @@ const createGround = () => {
 // Mesh Entity
 const createMesh = () => {
   const entity = new Entity();
-  entity.addComponents(
+  entity.addComponents([
     new MeshConfigComponent({
-      geometry: { type: "box", params: [1, 1, 1] },
+      geometry: { type: "box", params: [1, 2, 1] },
       material: { type: "standard", params: undefined },
     }),
     new TextureComponent({
@@ -62,27 +62,27 @@ const createMesh = () => {
         normalMap: "textures/normal.jpg",
       },
     }),
-    new RotationComponent(0, 0, 1, 2),
-    new PositionComponent(-10, 5, 15),
+    new RotationComponent(0, 0, 0, 2),
+    new PositionComponent(10, 3, -15),
     new PhysicsComponent({
       colliderConfig: {
-        shape: { type: "box", sizes: { x: 1, y: 1, z: 1 } },
+        shape: { type: "box", sizes: { x: 1, y: 2, z: 1 } },
         collisionGroups: InteractionGroups.DYNAMIC_OBJECT,
-        density: 5,
-        restitution: 0.2,
+        density: 500,
+        restitution: 0,
       },
       rigidBodyConfig: {
         rigidBodyType: "dynamic",
       },
     }),
-  );
+  ]);
 
   game.entityManager.addEntity(entity);
 };
 
 const createPlayer = () => {
   const entity = new Entity();
-  entity.addComponents(
+  entity.addComponents([
     new PositionComponent(3, 10, -4),
     new RotationComponent(0, 0, 0, 1),
     new CharacterMovementComponent(),
@@ -91,7 +91,7 @@ const createPlayer = () => {
     new PointerLockControlsComponent(),
     new PlayerComponent(),
     new PlayerControlComponent(),
-  );
+  ]);
 
   game.entityManager.addEntity(entity);
 };
