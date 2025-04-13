@@ -1,7 +1,9 @@
+import { RigidBodyType } from "@dimforge/rapier3d";
 import { DamagedMarkerComponent } from "../components/DamagedMarkerComponent";
 import { DeadMarkerComponent } from "../components/DeadMarkerComponent";
 import { HealthComponent } from "../components/HealthComponent";
 import { MakeDamageComponent } from "../components/MakeDamageComponent";
+import { PhysicsComponent } from "../components/PhysicsComponent";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 
@@ -18,11 +20,20 @@ export class DamageSystem extends System {
       healthComponent.health -= amount;
 
       if (healthComponent.health <= 0) {
-        entity.addComponent(new DeadMarkerComponent());
+        this.markAsDead(entity);
       }
 
       entity.addComponent(new DamagedMarkerComponent());
       entity.removeComponent(MakeDamageComponent);
     }
+  }
+
+  private markAsDead(entity: Entity) {
+    const { rigidBody, collider } = entity.getComponent(PhysicsComponent) ?? {};
+
+    rigidBody?.setBodyType(RigidBodyType.KinematicPositionBased, true);
+    collider?.setSensor(true);
+
+    entity.addComponent(new DeadMarkerComponent());
   }
 }

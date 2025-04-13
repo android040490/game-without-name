@@ -10,6 +10,7 @@ import { System } from "../models/System";
 import { CharacterStateComponent } from "../components/CharacterStateComponent";
 import { EnemyStates } from "../constants/EnemyStates";
 import { HealthComponent } from "../components/HealthComponent";
+import { DespawnTimerComponent } from "../components/DespawnTimerComponent";
 
 export class EnemySpawnSystem extends System {
   private readonly entityManager: EntityManager;
@@ -44,6 +45,7 @@ export class EnemySpawnSystem extends System {
     entity.addComponent(new CharacterMovementComponent());
     entity.addComponent(new CharacterStateComponent(EnemyStates.Idle));
     entity.addComponent(new HealthComponent(30));
+    entity.addComponent(new DespawnTimerComponent(5));
     this.entityManager.addEntity(entity);
   }
 }

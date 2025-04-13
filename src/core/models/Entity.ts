@@ -24,6 +24,12 @@ export class Entity {
   }
 
   public addComponent(component: object): void {
+    if (this.components.has(component.constructor.name)) {
+      console.warn(
+        `Component of type ${component.constructor.name} already exists in the entity.`,
+      );
+      return;
+    }
     this.components.set(component.constructor.name, component);
     this.notifyAboutUpdate();
   }

@@ -29,7 +29,11 @@ export class PhysicsSystem extends System {
 
   removeEntity(entity: Entity): void {
     super.removeEntity(entity);
-    const { rigidBody } = entity.getComponent(PhysicsComponent) ?? {};
+    const { rigidBody, collider } = entity.getComponent(PhysicsComponent) ?? {};
+
+    if (collider) {
+      this.physicsManager.removeCollider(collider);
+    }
 
     if (rigidBody) {
       this.physicsManager.removeRigidBody(rigidBody);

@@ -14,7 +14,7 @@ import { WeaponComponent } from "../components/WeaponComponent";
 import { ActiveEvents } from "@dimforge/rapier3d";
 import { InteractionGroups } from "../constants/InteractionGroups";
 import { WeaponAnchorComponent } from "../components/WeaponAnchorComponent";
-import { MeshConfigComponent } from "../components/MeshConfigComponent";
+// import { MeshConfigComponent } from "../components/MeshConfigComponent";
 import { OwnerComponent } from "../components/OwnerComponent";
 
 export class PlayerFactorySystem extends System {
@@ -116,19 +116,19 @@ export class PlayerFactorySystem extends System {
           collisionGroups: InteractionGroups.PLAYER_WEAPON,
         },
       }),
-      new MeshConfigComponent({
-        geometry: {
-          type: "box",
-          params: [0.05, swordSize.y, 0.05],
-        },
-        material: {
-          type: "basic",
-          params: {
-            color: 0x00ff00,
-            wireframe: true,
-          },
-        },
-      }),
+      // new MeshConfigComponent({
+      //   geometry: {
+      //     type: "box",
+      //     params: [0.05, swordSize.y, 0.05],
+      //   },
+      //   material: {
+      //     type: "basic",
+      //     params: {
+      //       color: 0x00ff00,
+      //       wireframe: true,
+      //     },
+      //   },
+      // }),
     ]);
 
     this.entityManager.addEntity(weapon);

@@ -1,7 +1,7 @@
 import { CharacterState } from "../components/CharacterStateComponent";
 import { EnemyAnimationData, EnemyAnimations } from "./EnemyAnimations";
 
-type EnemyStateKey = "Idle" | "Walk" | "Run" | "Damaged";
+type EnemyStateKey = "Idle" | "Walk" | "Run" | "Damaged" | "Dead";
 
 export interface EnemyState extends CharacterState {
   name: EnemyStateKey;
@@ -30,5 +30,10 @@ export class EnemyStates {
     speed: 0,
     animation: EnemyAnimations.ReactionHit,
     nextState: EnemyStates.Idle,
+  };
+  static readonly Dead: EnemyState = {
+    name: "Dead",
+    speed: 0,
+    animation: EnemyAnimations.Dying,
   };
 }

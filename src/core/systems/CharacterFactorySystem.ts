@@ -76,6 +76,12 @@ export class CharacterFactorySystem extends System {
       capsule.add(modelMesh);
     }
 
+    capsule.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.frustumCulled = false;
+      }
+    });
+
     entity.addComponents(components);
   }
 

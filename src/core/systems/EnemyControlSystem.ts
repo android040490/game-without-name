@@ -56,6 +56,11 @@ export class EnemyControlSystem extends System {
       )!;
       const stateComponent = entity.getComponent(CharacterStateComponent)!;
       const animationComponent = entity.getComponent(AnimationComponent);
+
+      if (stateComponent.currentState === EnemyStates.Dead) {
+        continue;
+      }
+
       const newState = this.computeNextCharacterState(entity);
       stateComponent.currentState = newState;
 
@@ -116,21 +121,22 @@ export class EnemyControlSystem extends System {
 
   private computeNextCharacterState(entity: Entity): CharacterState {
     const { currentState } = entity.getComponent(CharacterStateComponent)!;
-    const isDead = entity.getComponent(DeadMarkerComponent)!;
-    const isDamaged = entity.getComponent(DamagedMarkerComponent);
-
-    let nextState = currentState;
+    const isDead = entity.hasComponent(DeadMarkerComponent);
+    const isDamaged = entity.hasComponent(DamagedMarkerComponent);
 
     if (isDead) {
-      console.log("isDead");
-      nextState = EnemyStates.Idle;
-    } else if (isDamaged) {
-      entity.removeComponent(DamagedMarkerComponent);
-      nextState = EnemyStates.Damaged;
-    } else if (currentState === EnemyStates.Idle) {
-      nextState = EnemyStates.Walk;
+      return EnemyStates.Dead;
     }
 
-    return nextState;
+    if (isDamaged) {
+      entity.removeComponent(DamagedMarkerComponent);
+      return EnemyStates.Damaged;
+    }
+
+    if (currentState === EnemyStates.Idle) {
+      return EnemyStates.Walk;
+    }
+
+    return currentState;
   }
 }
