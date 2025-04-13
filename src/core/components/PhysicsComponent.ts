@@ -1,4 +1,4 @@
-import { Collider, RigidBody } from "@dimforge/rapier3d";
+import type { Collider, RigidBody } from "@dimforge/rapier3d";
 import { PhysicalObjectConfig } from "../managers/PhysicsManager";
 
 export class PhysicsComponent {

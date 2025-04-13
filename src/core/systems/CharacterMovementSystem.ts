@@ -1,7 +1,7 @@
-import {
+const { QueryFilterFlags } = await import("@dimforge/rapier3d");
+import type {
   Collider,
   KinematicCharacterController,
-  QueryFilterFlags,
   RigidBody,
 } from "@dimforge/rapier3d";
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";

@@ -1,3 +1,4 @@
+import type { Collider, RigidBody } from "@dimforge/rapier3d";
 import * as THREE from "three";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { RotationComponent } from "../components/RotationComponent";
@@ -6,7 +7,6 @@ import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { TimeManager } from "../managers/TimeManager";
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
-import { Collider, RigidBody } from "@dimforge/rapier3d";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { PlayerControlComponent } from "../components/PlayerControlComponent";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";

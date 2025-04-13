@@ -1,4 +1,4 @@
-import { RigidBodyType } from "@dimforge/rapier3d";
+const { RigidBodyType } = await import("@dimforge/rapier3d");
 import { DamagedMarkerComponent } from "../components/DamagedMarkerComponent";
 import { DeadMarkerComponent } from "../components/DeadMarkerComponent";
 import { HealthComponent } from "../components/HealthComponent";

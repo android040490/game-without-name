@@ -1,5 +1,5 @@
 const RAPIER = await import("@dimforge/rapier3d");
-import {
+import type {
   ActiveEvents,
   Collider,
   ColliderDesc,

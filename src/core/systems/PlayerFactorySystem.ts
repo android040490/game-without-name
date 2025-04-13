@@ -1,3 +1,4 @@
+const { ActiveEvents } = await import("@dimforge/rapier3d");
 import * as THREE from "three";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
@@ -11,7 +12,6 @@ import { AnimationComponent } from "../components/AnimationComponent";
 import { MeshBuilder } from "../factories/MeshBuilder";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
 import { WeaponComponent } from "../components/WeaponComponent";
-import { ActiveEvents } from "@dimforge/rapier3d";
 import { InteractionGroups } from "../constants/InteractionGroups";
 import { WeaponAnchorComponent } from "../components/WeaponAnchorComponent";
 // import { MeshConfigComponent } from "../components/MeshConfigComponent";
