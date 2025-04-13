@@ -3,7 +3,6 @@ import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { MeshComponent } from "../components/MeshComponent";
-import { EntityManager } from "../managers/EntityManager";
 import { ResourcesManager } from "../managers/ResourcesManager";
 import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
 import { PhysicsComponent } from "../components/PhysicsComponent";
@@ -11,16 +10,15 @@ import { GLTF, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { MeshBuilder } from "../factories/MeshBuilder";
 import { InteractionGroups } from "../constants/InteractionGroups";
+import { EnergyBarComponent } from "../components/EnergyBarComponent";
 
 export class CharacterFactorySystem extends System {
-  private readonly entityManager: EntityManager;
   private readonly resourcesManager: ResourcesManager;
   private readonly meshBuilder: MeshBuilder;
 
   constructor(game: Game) {
     super(game);
 
-    this.entityManager = this.game.entityManager;
     this.resourcesManager = this.game.resourcesManager;
     this.meshBuilder = new MeshBuilder();
   }
@@ -63,6 +61,7 @@ export class CharacterFactorySystem extends System {
           lockRotation: true,
         },
       }),
+      new EnergyBarComponent(height / 2 + 0.1),
     ];
 
     if (modelPath) {
@@ -79,7 +78,13 @@ export class CharacterFactorySystem extends System {
       capsule.add(modelMesh);
     }
 
-    this.entityManager.addComponents(entity, components);
+    capsule.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.frustumCulled = false;
+      }
+    });
+
+    entity.addComponents(components);
   }
 
   private createCapsule(

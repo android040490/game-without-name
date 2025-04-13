@@ -19,6 +19,22 @@ export class AnimationSystem extends System {
 
   addEntity(entity: Entity) {
     super.addEntity(entity);
+    const component = entity.getComponent(AnimationComponent)!;
+
+    component.animationMixer.addEventListener(
+      "finished",
+      component.handleComplete,
+    );
+  }
+
+  removeEntity(entity: Entity): void {
+    super.removeEntity(entity);
+    const component = entity.getComponent(AnimationComponent)!;
+
+    component.animationMixer.removeEventListener(
+      "finished",
+      component.handleComplete,
+    );
   }
 
   play(entity: Entity) {
@@ -33,7 +49,7 @@ export class AnimationSystem extends System {
       currentActionName,
       animationActions,
       repetitions,
-      nextAnimation,
+      timeScale,
     } = component;
 
     if (currentActionName && !currentAction) {
@@ -53,14 +69,9 @@ export class AnimationSystem extends System {
     }
 
     if (component.currentAction) {
+      component.currentAction.setEffectiveTimeScale(timeScale);
       component.currentAction.repetitions = repetitions;
       component.currentAction.clampWhenFinished = true;
-    }
-
-    if (nextAnimation) {
-      component.currentAction?.getMixer().addEventListener("finished", () => {
-        component.animation = nextAnimation;
-      });
     }
   }
 

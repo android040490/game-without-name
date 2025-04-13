@@ -19,26 +19,26 @@ export class PlayerAnimations {
   static readonly Attack_01: PlayerAnimationData = {
     type: "attack",
     actionName: "Attack_01",
-    nextAnimation: PlayerAnimations.Idle,
     repetitions: 1,
+    timeScale: 1.5,
   };
   static readonly Attack_02: PlayerAnimationData = {
     type: "attack",
     actionName: "Attack_02",
-    nextAnimation: PlayerAnimations.Idle,
     repetitions: 1,
+    timeScale: 1.5,
   };
   static readonly Attack_03: PlayerAnimationData = {
     type: "attack",
     actionName: "Attack_03",
-    nextAnimation: PlayerAnimations.Idle,
     repetitions: 1,
+    timeScale: 1.5,
   };
   static readonly Attack_04: PlayerAnimationData = {
     type: "attack",
     actionName: "Attack_04",
-    nextAnimation: PlayerAnimations.Idle,
     repetitions: 1,
+    timeScale: 1.5,
   };
 
   static readonly ALL: Record<PlayerAnimationKey, PlayerAnimationData> = {

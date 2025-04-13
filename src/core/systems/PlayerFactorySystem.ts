@@ -14,7 +14,8 @@ import { WeaponComponent } from "../components/WeaponComponent";
 import { ActiveEvents } from "@dimforge/rapier3d";
 import { InteractionGroups } from "../constants/InteractionGroups";
 import { WeaponAnchorComponent } from "../components/WeaponAnchorComponent";
-import { MeshConfigComponent } from "../components/MeshConfigComponent";
+// import { MeshConfigComponent } from "../components/MeshConfigComponent";
+import { OwnerComponent } from "../components/OwnerComponent";
 
 export class PlayerFactorySystem extends System {
   private readonly entityManager: EntityManager;
@@ -81,15 +82,15 @@ export class PlayerFactorySystem extends System {
         );
       }
 
-      this.createWeapon(armsMesh);
+      this.createWeapon(entity, armsMesh);
 
       capsule.add(armsMesh);
     }
 
-    this.entityManager.addComponents(entity, components);
+    entity.addComponents(components);
   }
 
-  private createWeapon(armsMesh: THREE.Object3D): void {
+  private createWeapon(player: Entity, armsMesh: THREE.Object3D): void {
     const swordMesh = armsMesh.getObjectByName("Proto_sword");
 
     if (!swordMesh) {
@@ -100,9 +101,10 @@ export class PlayerFactorySystem extends System {
     const box = new THREE.Box3().setFromObject(swordMesh);
     const swordSize = box.getSize(new THREE.Vector3());
 
-    const entity = new Entity();
-    entity.addComponents(
-      new WeaponComponent(),
+    const weapon = new Entity();
+    weapon.addComponents([
+      new OwnerComponent(player),
+      new WeaponComponent({ damageAmount: 10 }),
       new WeaponAnchorComponent(swordMesh, new THREE.Vector3(-0.01, 0.5, 0)), // TODO: maybe could be a part of Player entity
       new PhysicsComponent({
         colliderConfig: {
@@ -110,27 +112,26 @@ export class PlayerFactorySystem extends System {
             type: "box",
             sizes: { x: 0.05, y: swordSize.y, z: 0.05 },
           },
-          sensor: true,
-          activeEvents: ActiveEvents.COLLISION_EVENTS,
+          activeEvents: ActiveEvents.CONTACT_FORCE_EVENTS,
           collisionGroups: InteractionGroups.PLAYER_WEAPON,
         },
       }),
-      new MeshConfigComponent({
-        geometry: {
-          type: "box",
-          params: [0.05, swordSize.y, 0.05],
-        },
-        material: {
-          type: "basic",
-          params: {
-            color: 0x00ff00,
-            wireframe: true,
-          },
-        },
-      }),
-    );
+      // new MeshConfigComponent({
+      //   geometry: {
+      //     type: "box",
+      //     params: [0.05, swordSize.y, 0.05],
+      //   },
+      //   material: {
+      //     type: "basic",
+      //     params: {
+      //       color: 0x00ff00,
+      //       wireframe: true,
+      //     },
+      //   },
+      // }),
+    ]);
 
-    this.entityManager.addEntity(entity);
+    this.entityManager.addEntity(weapon);
   }
 
   private createCapsule(

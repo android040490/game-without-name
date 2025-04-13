@@ -111,6 +111,10 @@ export class PhysicsManager {
     this._instance.removeRigidBody(rigidBody);
   }
 
+  removeCollider(collider: Collider): void {
+    this._instance.removeCollider(collider, true);
+  }
+
   createCharacterController(offset: number): KinematicCharacterController {
     return this._instance.createCharacterController(offset);
   }

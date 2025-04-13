@@ -62,6 +62,7 @@ export class CharacterMovementSystem extends System {
       collider,
       { x: position.x, y: 0, z: position.z }, // The collider we would like to move.
       QueryFilterFlags.EXCLUDE_SENSORS,
+      collider.collisionGroups(),
     );
 
     // Read the result.
