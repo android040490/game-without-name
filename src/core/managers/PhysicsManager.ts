@@ -40,8 +40,21 @@ interface Capsule {
   height: number;
 }
 
+interface TrimeshShape {
+  type: "trimesh";
+  vertices: Float32Array;
+  indices: Uint32Array;
+}
+
+export type ShapeConfig =
+  | BoxShape
+  | SphereShape
+  | CylinderShape
+  | Capsule
+  | TrimeshShape;
+
 interface ColliderConfig {
-  shape: BoxShape | SphereShape | CylinderShape | Capsule;
+  shape: ShapeConfig;
   density?: number;
   restitution?: number;
   friction?: number;
@@ -50,7 +63,7 @@ interface ColliderConfig {
   activeEvents?: ActiveEvents;
 }
 
-type RigidBodyType =
+export type RigidBodyType =
   | "dynamic"
   | "fixed"
   | "kinematicVelocityBased"
@@ -155,16 +168,17 @@ export class PhysicsManager {
         bodyDesc = RAPIER.RigidBodyDesc.dynamic();
         break;
 
-      case "fixed":
-        bodyDesc = RAPIER.RigidBodyDesc.fixed();
-        break;
-
       case "kinematicPositionBased":
         bodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased();
         break;
 
       case "kinematicVelocityBased":
         bodyDesc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
+        break;
+
+      case "fixed":
+      default:
+        bodyDesc = RAPIER.RigidBodyDesc.fixed();
         break;
     }
 
@@ -223,6 +237,13 @@ export class PhysicsManager {
         colliderDesc = RAPIER.ColliderDesc.capsule(
           shape.height / 2,
           shape.radius,
+        );
+        break;
+
+      case "trimesh":
+        colliderDesc = RAPIER.ColliderDesc.trimesh(
+          shape.vertices,
+          shape.indices,
         );
     }
 

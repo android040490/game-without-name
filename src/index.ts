@@ -100,5 +100,6 @@ createEnvironment();
 createGround();
 createMesh();
 createPlayer();
+await game.levelManager.loadLevel(1);
 
 game.start();

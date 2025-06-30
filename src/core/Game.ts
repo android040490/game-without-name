@@ -13,6 +13,7 @@ import { System } from "./models/System";
 import { Constructor } from "./type-utils/constructor";
 import { PhysicsManager } from "./managers/PhysicsManager";
 import { systems } from "./systems";
+import { LevelManager } from "./managers/LevelManager";
 
 let instance: Game;
 
@@ -30,6 +31,7 @@ export class Game {
   public readonly systemManager!: SystemManager;
   public readonly entityManager!: EntityManager;
   public readonly physicsManager!: PhysicsManager;
+  public readonly levelManager!: LevelManager;
 
   constructor(canvas: HTMLCanvasElement) {
     if (instance) {
@@ -48,6 +50,7 @@ export class Game {
     this.systemManager = new SystemManager();
     this.entityManager = new EntityManager();
     this.physicsManager = new PhysicsManager();
+    this.levelManager = new LevelManager(this);
     this.eventBus = eventBus;
 
     this.update = this.update.bind(this);
