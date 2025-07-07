@@ -40,7 +40,7 @@ export class EnemySpawnSystem extends System {
         modelPath: "models/animated-avatar.glb",
       }),
     );
-    entity.addComponent(new PositionComponent(0, 4, 0));
+    entity.addComponent(new PositionComponent(0, 10, 0));
     entity.addComponent(new RotationComponent(0, 0, 0, 1));
     entity.addComponent(new CharacterMovementComponent());
     entity.addComponent(new CharacterStateComponent(EnemyStates.Idle));

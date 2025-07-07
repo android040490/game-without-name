@@ -1,1 +1,4 @@
-[{ "model": "models/house.glb", "position": [20, 0, 0], "scale": 0.7 }]
+[
+  { "model": "models/house.glb", "position": [0, 0, 0] },
+  { "model": "models/terrain.glb", "position": [0, 0, 0] }
+]

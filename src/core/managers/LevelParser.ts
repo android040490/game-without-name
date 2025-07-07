@@ -69,8 +69,8 @@ export class LevelParser {
 
     const worldPosition = new THREE.Vector3();
     mesh.getWorldPosition(worldPosition);
-    // const worldQuaternion = new THREE.Quaternion();
-    // mesh.getWorldQuaternion(worldQuaternion);
+    const worldQuaternion = new THREE.Quaternion();
+    mesh.getWorldQuaternion(worldQuaternion);
     const scale = mesh.getWorldScale(new THREE.Vector3());
     mesh.scale.copy(scale);
 
@@ -80,8 +80,7 @@ export class LevelParser {
         worldPosition.y + item.position[1],
         worldPosition.z + item.position[2],
       ),
-      new RotationComponent(),
-      //   new RotationComponent(...worldQuaternion),
+      new RotationComponent(...worldQuaternion),
       this.createPhysicsComponent(mesh),
       new MeshComponent(mesh), // TODO: maybe add mesh only if dynamic collider
     ];

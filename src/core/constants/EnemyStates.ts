@@ -17,7 +17,7 @@ export class EnemyStates {
   };
   static readonly Walk: EnemyState = {
     name: "Walk",
-    speed: 2,
+    speed: 1,
     animation: EnemyAnimations.Walk,
   };
   static readonly Run: EnemyState = {

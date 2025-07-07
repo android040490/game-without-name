@@ -25,29 +25,6 @@ const createEnvironment = () => {
   game.entityManager.addEntity(entity);
 };
 
-// Ground Entity
-const createGround = () => {
-  const entity = new Entity();
-  entity.addComponents([
-    new MeshConfigComponent({
-      geometry: { type: "cylinder", params: [50, 50, 0.5] },
-      material: { type: "standard", params: { color: "#5b4" } },
-    }),
-    new PositionComponent(0, 0, 0),
-    new PhysicsComponent({
-      colliderConfig: {
-        shape: { type: "cylinder", radius: 50, height: 0.5 },
-        collisionGroups: InteractionGroups.GROUND,
-      },
-      rigidBodyConfig: {
-        rigidBodyType: "fixed",
-      },
-    }),
-  ]);
-
-  game.entityManager.addEntity(entity);
-};
-
 // Mesh Entity
 const createMesh = () => {
   const entity = new Entity();
@@ -97,7 +74,6 @@ const createPlayer = () => {
 };
 
 createEnvironment();
-createGround();
 createMesh();
 createPlayer();
 await game.levelManager.loadLevel(1);
