@@ -60,7 +60,7 @@ const createMesh = () => {
 const createPlayer = () => {
   const entity = new Entity();
   entity.addComponents([
-    new PositionComponent(3, 10, -4),
+    new PositionComponent(-40, 30, 150),
     new RotationComponent(0, 0, 0, 1),
     new CharacterMovementComponent(),
     new PlayerConfigComponent({ armsModelPath: "models/arms.glb" }),

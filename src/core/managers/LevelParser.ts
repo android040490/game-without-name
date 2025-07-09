@@ -96,7 +96,7 @@ export class LevelParser {
     switch (mesh.userData.collider_type) {
       case "trimesh":
         const geometry = mesh.geometry.clone();
-        geometry.applyMatrix4(mesh.matrixWorld);
+        // geometry.applyMatrix4(mesh.matrixWorld);
 
         shape = {
           type: "trimesh",
