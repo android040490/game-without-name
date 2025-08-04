@@ -76,6 +76,6 @@ const createPlayer = () => {
 createEnvironment();
 createMesh();
 createPlayer();
-await game.levelManager.loadLevel(1);
+await game.levelManager.loadLevel("demo");
 
 game.start();

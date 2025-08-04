@@ -11,8 +11,8 @@ export class LevelManager {
     this.levelParser = new LevelParser(game.resourcesManager);
   }
 
-  async loadLevel(levelNumber: number): Promise<void> {
-    const levelPath = `levels/${levelNumber}.json`;
+  async loadLevel(levelId: string): Promise<void> {
+    const levelPath = `levels/${levelId}.json`;
     const entities = await this.levelParser.parseLevel(levelPath);
 
     for (const entity of entities) {

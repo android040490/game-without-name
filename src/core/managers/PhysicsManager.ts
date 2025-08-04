@@ -4,6 +4,7 @@ import type {
   Collider,
   ColliderDesc,
   EventQueue,
+  ImpulseJoint,
   InteractionGroups,
   KinematicCharacterController,
   QueryFilterFlags,
@@ -267,5 +268,26 @@ export class PhysicsManager {
     }
 
     return colliderDesc;
+  }
+
+  createRevoluteJoint(
+    anchorVec1: Vector,
+    anchorVec2: Vector,
+    rigidBody1: RigidBody,
+    rigidBody2: RigidBody,
+    axis: Vector,
+  ): ImpulseJoint {
+    const jointParams = RAPIER.JointData.revolute(anchorVec2, anchorVec1, axis);
+
+    return this.instance.createImpulseJoint(
+      jointParams,
+      rigidBody2,
+      rigidBody1,
+      true,
+    );
+  }
+
+  removeJoint(joint: ImpulseJoint): void {
+    this._instance.removeImpulseJoint(joint, true);
   }
 }
