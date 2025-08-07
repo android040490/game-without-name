@@ -255,7 +255,7 @@ export class PhysicsManager {
       colliderDesc.setRestitution(restitution);
     }
     if (friction) {
-      colliderDesc.friction = friction;
+      colliderDesc.setFriction(friction);
     }
     if (sensor) {
       colliderDesc.setSensor(true);
