@@ -4,6 +4,7 @@ import type {
   Collider,
   ColliderDesc,
   EventQueue,
+  ImpulseJoint,
   InteractionGroups,
   KinematicCharacterController,
   QueryFilterFlags,
@@ -40,8 +41,21 @@ interface Capsule {
   height: number;
 }
 
+interface TrimeshShape {
+  type: "trimesh";
+  vertices: Float32Array;
+  indices: Uint32Array;
+}
+
+export type ShapeConfig =
+  | BoxShape
+  | SphereShape
+  | CylinderShape
+  | Capsule
+  | TrimeshShape;
+
 interface ColliderConfig {
-  shape: BoxShape | SphereShape | CylinderShape | Capsule;
+  shape: ShapeConfig;
   density?: number;
   restitution?: number;
   friction?: number;
@@ -50,7 +64,7 @@ interface ColliderConfig {
   activeEvents?: ActiveEvents;
 }
 
-type RigidBodyType =
+export type RigidBodyType =
   | "dynamic"
   | "fixed"
   | "kinematicVelocityBased"
@@ -155,16 +169,17 @@ export class PhysicsManager {
         bodyDesc = RAPIER.RigidBodyDesc.dynamic();
         break;
 
-      case "fixed":
-        bodyDesc = RAPIER.RigidBodyDesc.fixed();
-        break;
-
       case "kinematicPositionBased":
         bodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased();
         break;
 
       case "kinematicVelocityBased":
         bodyDesc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
+        break;
+
+      case "fixed":
+      default:
+        bodyDesc = RAPIER.RigidBodyDesc.fixed();
         break;
     }
 
@@ -224,6 +239,13 @@ export class PhysicsManager {
           shape.height / 2,
           shape.radius,
         );
+        break;
+
+      case "trimesh":
+        colliderDesc = RAPIER.ColliderDesc.trimesh(
+          shape.vertices,
+          shape.indices,
+        );
     }
 
     if (density !== undefined) {
@@ -233,7 +255,7 @@ export class PhysicsManager {
       colliderDesc.setRestitution(restitution);
     }
     if (friction) {
-      colliderDesc.friction = friction;
+      colliderDesc.setFriction(friction);
     }
     if (sensor) {
       colliderDesc.setSensor(true);
@@ -246,5 +268,26 @@ export class PhysicsManager {
     }
 
     return colliderDesc;
+  }
+
+  createRevoluteJoint(
+    anchorVec1: Vector,
+    anchorVec2: Vector,
+    rigidBody1: RigidBody,
+    rigidBody2: RigidBody,
+    axis: Vector,
+  ): ImpulseJoint {
+    const jointParams = RAPIER.JointData.revolute(anchorVec2, anchorVec1, axis);
+
+    return this.instance.createImpulseJoint(
+      jointParams,
+      rigidBody2,
+      rigidBody1,
+      true,
+    );
+  }
+
+  removeJoint(joint: ImpulseJoint): void {
+    this._instance.removeImpulseJoint(joint, true);
   }
 }

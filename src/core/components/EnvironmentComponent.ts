@@ -27,7 +27,7 @@ export class EnvironmentComponent {
       sunPhi = Math.PI / 3,
       sunTheta = Math.PI / 4,
       ambientLightColor = "#ffffff",
-      ambientLightIntensity = 0.05,
+      ambientLightIntensity = 0.2,
       nightMapTexturePath = "textures/stars_milky_way_8k.jpg",
     } = config ?? {};
     this.sunLight = new THREE.DirectionalLight(

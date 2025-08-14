@@ -25,29 +25,6 @@ const createEnvironment = () => {
   game.entityManager.addEntity(entity);
 };
 
-// Ground Entity
-const createGround = () => {
-  const entity = new Entity();
-  entity.addComponents([
-    new MeshConfigComponent({
-      geometry: { type: "cylinder", params: [50, 50, 0.5] },
-      material: { type: "standard", params: { color: "#5b4" } },
-    }),
-    new PositionComponent(0, 0, 0),
-    new PhysicsComponent({
-      colliderConfig: {
-        shape: { type: "cylinder", radius: 50, height: 0.5 },
-        collisionGroups: InteractionGroups.GROUND,
-      },
-      rigidBodyConfig: {
-        rigidBodyType: "fixed",
-      },
-    }),
-  ]);
-
-  game.entityManager.addEntity(entity);
-};
-
 // Mesh Entity
 const createMesh = () => {
   const entity = new Entity();
@@ -83,7 +60,7 @@ const createMesh = () => {
 const createPlayer = () => {
   const entity = new Entity();
   entity.addComponents([
-    new PositionComponent(3, 10, -4),
+    new PositionComponent(-40, 30, 150),
     new RotationComponent(0, 0, 0, 1),
     new CharacterMovementComponent(),
     new PlayerConfigComponent({ armsModelPath: "models/arms.glb" }),
@@ -97,8 +74,8 @@ const createPlayer = () => {
 };
 
 createEnvironment();
-createGround();
 createMesh();
 createPlayer();
+await game.levelManager.loadLevel("demo");
 
 game.start();

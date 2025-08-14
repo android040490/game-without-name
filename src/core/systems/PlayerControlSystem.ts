@@ -122,7 +122,7 @@ export class PlayerControlSystem extends System {
         y: -1,
         z: 0.0,
       },
-      height / 2, // get half the height of the body
+      height / 2 + 0.1, // get half the height of the body plus a small offset
       true,
       undefined,
       undefined,
