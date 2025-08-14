@@ -1,3 +1,4 @@
+const { JointType: JT } = await import("@dimforge/rapier3d");
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { JointComponent } from "../components/JointComponent";
 import { Game } from "../Game";
@@ -5,9 +6,9 @@ import { EntityManager } from "../managers/EntityManager";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
-import { JointType } from "@dimforge/rapier3d";
+import type { JointType } from "@dimforge/rapier3d";
 
-export const jointTypes: JointType[] = [JointType.Revolute];
+export const jointTypes: JointType[] = [JT.Revolute];
 
 export class JointSystem extends System {
   private readonly physicsManager: PhysicsManager;
@@ -41,7 +42,7 @@ export class JointSystem extends System {
       }
 
       switch (type) {
-        case JointType.Revolute:
+        case JT.Revolute:
           this.createRevoluteJoint(entity);
           break;
 
