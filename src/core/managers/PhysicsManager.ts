@@ -3,15 +3,19 @@ import type {
   ActiveEvents,
   Collider,
   ColliderDesc,
+  ColliderShapeCastHit,
   EventQueue,
   ImpulseJoint,
   InteractionGroups,
   KinematicCharacterController,
+  Quaternion,
   QueryFilterFlags,
   RayColliderHit,
   RigidBody,
   RigidBodyDesc,
+  Shape,
   Vector,
+  Vector3,
   World,
 } from "@dimforge/rapier3d";
 
@@ -155,6 +159,72 @@ export class PhysicsManager {
       filterExcludeCollider,
       filterExcludeRigidBody,
       filterPredicate,
+    );
+  }
+
+  castShape(params: {
+    position: Vector3;
+    rotation: Quaternion;
+    direction: Vector3;
+    shapeConfig: ShapeConfig;
+    targetDistance: number;
+    maxToi: number;
+    stopAtPenetration?: boolean;
+    filterFlags?: QueryFilterFlags;
+    filterGroups?: InteractionGroups;
+    filterExcludeCollider?: Collider;
+    filterExcludeRigidBody?: RigidBody;
+  }): ColliderShapeCastHit | null {
+    const {
+      position,
+      rotation,
+      direction,
+      shapeConfig,
+      targetDistance,
+      maxToi,
+      stopAtPenetration = false,
+      filterFlags,
+      filterGroups,
+      filterExcludeCollider,
+      filterExcludeRigidBody,
+    } = params;
+
+    let shape: Shape;
+    switch (shapeConfig.type) {
+      case "box":
+        const { x, y, z } = shapeConfig.sizes;
+        shape = new RAPIER.Cuboid(x / 2, y / 2, z / 2);
+        break;
+
+      case "sphere":
+        shape = new RAPIER.Ball(shapeConfig.radius);
+        break;
+
+      case "cylinder":
+        shape = new RAPIER.Cylinder(shapeConfig.height / 2, shapeConfig.radius);
+        break;
+
+      case "capsule":
+        shape = new RAPIER.Capsule(shapeConfig.height / 2, shapeConfig.radius);
+        break;
+
+      case "trimesh":
+        shape = new RAPIER.TriMesh(shapeConfig.vertices, shapeConfig.indices);
+        break;
+    }
+
+    return this._instance.castShape(
+      position,
+      rotation,
+      direction,
+      shape,
+      targetDistance,
+      maxToi,
+      stopAtPenetration,
+      filterFlags,
+      filterGroups,
+      filterExcludeCollider,
+      filterExcludeRigidBody,
     );
   }
 

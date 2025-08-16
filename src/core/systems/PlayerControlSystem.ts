@@ -1,12 +1,10 @@
 import type { Collider, RigidBody } from "@dimforge/rapier3d";
 import * as THREE from "three";
 import { PhysicsComponent } from "../components/PhysicsComponent";
-import { RotationComponent } from "../components/RotationComponent";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { TimeManager } from "../managers/TimeManager";
-import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { PlayerControlComponent } from "../components/PlayerControlComponent";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
@@ -37,10 +35,8 @@ export class PlayerControlSystem extends System {
   appliesTo(entity: Entity): boolean {
     return entity.hasComponents(
       PlayerControlComponent,
-      CharacterMovementComponent,
       PlayerConfigComponent,
-      PhysicsComponent, // TODO: maybe to move the check for this component to the add entity method
-      RotationComponent, // TODO: maybe to move the check for this component to the add entity method
+      PhysicsComponent,
     );
   }
 
@@ -65,28 +61,22 @@ export class PlayerControlSystem extends System {
     for (const [_, entity] of this.entities) {
       const { rigidBody, collider } = entity.getComponent(PhysicsComponent)!;
       const animationComponent = entity.getComponent(AnimationComponent);
-      const { rotation } = entity.getComponent(RotationComponent)!;
-      const characterMovementComponent = entity.getComponent(
-        CharacterMovementComponent,
-      )!;
       const { height } = entity.getComponent(PlayerConfigComponent)!;
-      const player = entity.getComponent(PlayerControlComponent)!;
+      const playerControlComponent = entity.getComponent(
+        PlayerControlComponent,
+      )!;
 
       if (!collider || !rigidBody) {
         continue;
       }
 
-      player.accelerate = this.accelerate;
+      playerControlComponent.accelerate = this.accelerate;
 
-      characterMovementComponent.position = this.computeNextMovement(
-        player,
-        rotation,
-      );
+      const onTheGround = this.detectGround(rigidBody, collider, height);
 
-      if (
-        this.jumpInitiated &&
-        this.detectGround(rigidBody, collider, height)
-      ) {
+      this.computeNextVelocity(playerControlComponent, rigidBody, onTheGround);
+
+      if (this.jumpInitiated && onTheGround) {
         this.jump(rigidBody);
       }
       this.jumpInitiated = false;
@@ -113,33 +103,31 @@ export class PlayerControlSystem extends System {
     collider: Collider,
     height: number,
   ): boolean {
-    const position = rigidBody.translation();
-
-    const hit = this.physicsManager.castRay(
-      position,
-      {
-        x: 0.0,
-        y: -1,
-        z: 0.0,
+    const hitShape = this.physicsManager.castShape({
+      position: rigidBody.translation(),
+      rotation: rigidBody.rotation(),
+      direction: { x: 0, y: -1, z: 0 },
+      shapeConfig: {
+        type: "cylinder",
+        height,
+        radius: 0.3,
       },
-      height / 2 + 0.1, // get half the height of the body plus a small offset
-      true,
-      undefined,
-      undefined,
-      collider,
-    );
+      targetDistance: 0,
+      maxToi: 0.1,
+      filterExcludeCollider: collider,
+    });
 
-    return !!hit?.collider;
+    return !!hitShape;
   }
 
-  private computeNextMovement(
-    player: PlayerControlComponent,
-    currentRotation: THREE.Quaternion,
-  ): THREE.Vector3 {
-    const { velocity, speed, accelerationFactor, decelerationRate } = player;
+  private computeNextVelocity(
+    playerControlComponent: PlayerControlComponent,
+    rigidBody: RigidBody,
+    onTheGround: boolean,
+  ): void {
+    const { velocity, speed, acceleration, damping } = playerControlComponent;
 
     const delta = this.timeManager.timeStep;
-    velocity.lerp(new THREE.Vector3(0, 0, 0), decelerationRate * delta);
 
     // Compute movement direction
     const direction = new THREE.Vector3(
@@ -148,20 +136,34 @@ export class PlayerControlSystem extends System {
       Number(this.moveBackward) - Number(this.moveForward),
     );
 
-    if (direction.lengthSq() > 0) {
+    if (direction.lengthSq() > 0 && onTheGround) {
       direction.normalize(); // Avoid diagonal speed boost
 
       // Apply acceleration
-      velocity.addScaledVector(direction, speed * accelerationFactor * delta);
+      velocity.addScaledVector(direction, acceleration * delta);
 
       // Clamp velocity to max speed
-      const maxSpeed = speed * delta;
-      if (velocity.length() > maxSpeed) {
-        velocity.normalize().multiplyScalar(maxSpeed);
+      if (velocity.length() > speed) {
+        velocity.setLength(speed);
+      }
+    } else if (velocity.lengthSq() > 0) {
+      const dampingFactor = onTheGround ? damping : damping * 0.1; // Less damping in the air
+      const factor = Math.pow(1 - dampingFactor, delta * 60);
+      velocity.multiplyScalar(factor);
+
+      // If the velocity is very small, set it to zero
+      if (velocity.length() < 0.0001) {
+        console.log("Resetting velocity to zero");
+        velocity.set(0, 0, 0);
       }
     }
 
-    return velocity.clone().applyQuaternion(currentRotation);
+    if (onTheGround) {
+      const currentRotation = rigidBody.rotation();
+      const result = velocity.clone().applyQuaternion(currentRotation);
+      result.y = rigidBody.linvel().y; // Preserve vertical velocity
+      rigidBody.setLinvel(result, true);
+    }
   }
 
   private setListeners(): void {

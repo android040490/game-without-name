@@ -47,7 +47,7 @@ export class PlayerFactorySystem extends System {
 
     let model: GLTF | undefined;
 
-    const radius = height * 0.35;
+    const radius = height * 0.3;
     const capsuleLength = height - radius * 2;
 
     const capsule = this.createCapsule(

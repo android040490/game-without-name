@@ -9,7 +9,6 @@ import { EnvironmentComponent } from "./core/components/EnvironmentComponent";
 import { CameraComponent } from "./core/components/CameraComponent";
 import { PointerLockControlsComponent } from "./core/components/PointerLockControlsComponent";
 import { PlayerComponent } from "./core/components/PlayerComponent";
-import { CharacterMovementComponent } from "./core/components/CharacterMovementComponent";
 import { PlayerControlComponent } from "./core/components/PlayerControlComponent";
 import { PlayerConfigComponent } from "./core/components/PlayerConfigComponent";
 import { InteractionGroups } from "./core/constants/InteractionGroups";
@@ -62,7 +61,6 @@ const createPlayer = () => {
   entity.addComponents([
     new PositionComponent(-40, 30, 150),
     new RotationComponent(0, 0, 0, 1),
-    new CharacterMovementComponent(),
     new PlayerConfigComponent({ armsModelPath: "models/arms.glb" }),
     new CameraComponent({ offsetHeight: 0.8 }),
     new PointerLockControlsComponent(),
