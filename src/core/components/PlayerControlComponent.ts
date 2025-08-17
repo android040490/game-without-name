@@ -3,32 +3,32 @@ import { Vector3 } from "three";
 interface Config {
   minSpeed?: number;
   maxSpeed?: number;
-  accelerationFactor?: number;
-  decelerationRate?: number;
+  acceleration?: number;
+  damping?: number;
 }
 
 export class PlayerControlComponent {
   public minSpeed: number;
   public maxSpeed: number;
-  public accelerationFactor: number;
-  public decelerationRate: number;
+  public acceleration: number;
+  public damping: number;
   public velocity: Vector3;
   public speed: number;
 
   constructor(config?: Config) {
     const {
-      minSpeed = 3,
-      maxSpeed = 10,
-      accelerationFactor = 0.2,
-      decelerationRate = 10,
+      minSpeed = 4,
+      maxSpeed = 8,
+      acceleration = 12,
+      damping = 0.13,
     } = config ?? {};
 
     this.speed = minSpeed;
     this.minSpeed = minSpeed;
     this.maxSpeed = maxSpeed;
     this.velocity = new Vector3();
-    this.accelerationFactor = accelerationFactor;
-    this.decelerationRate = decelerationRate;
+    this.acceleration = acceleration;
+    this.damping = damping;
   }
 
   set accelerate(value: boolean) {
