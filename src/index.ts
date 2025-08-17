@@ -7,7 +7,6 @@ import { MeshConfigComponent } from "./core/components/MeshConfigComponent";
 import { TextureComponent } from "./core/components/TextureComponent";
 import { EnvironmentComponent } from "./core/components/EnvironmentComponent";
 import { CameraComponent } from "./core/components/CameraComponent";
-import { PointerLockControlsComponent } from "./core/components/PointerLockControlsComponent";
 import { PlayerComponent } from "./core/components/PlayerComponent";
 import { PlayerControlComponent } from "./core/components/PlayerControlComponent";
 import { PlayerConfigComponent } from "./core/components/PlayerConfigComponent";
@@ -63,7 +62,6 @@ const createPlayer = () => {
     new RotationComponent(0, 0, 0, 1),
     new PlayerConfigComponent({ armsModelPath: "models/arms.glb" }),
     new CameraComponent({ offsetHeight: 0.8 }),
-    new PointerLockControlsComponent(),
     new PlayerComponent(),
     new PlayerControlComponent(),
   ]);

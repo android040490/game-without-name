@@ -6,7 +6,7 @@ import { Game } from "../Game";
 import { CameraManager } from "../managers/CameraManager";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
-import { PointerLockControlsComponent } from "../components/PointerLockControlsComponent";
+// import { PointerLockControlsComponent } from "../components/PointerLockControlsComponent";
 
 export class CameraSystem extends System {
   private readonly cameraManager: CameraManager;
@@ -53,10 +53,10 @@ export class CameraSystem extends System {
         camera.position.copy(newCameraPosition);
 
         // set camera direction if no PointerLockControls
-        if (!entity.hasComponent(PointerLockControlsComponent)) {
-          const target = newCameraPosition.clone().add(cameraDirection);
-          camera.lookAt(target);
-        }
+        // if (!entity.hasComponent(PointerLockControlsComponent)) {
+        //   const target = newCameraPosition.clone().add(cameraDirection);
+        //   camera.lookAt(target);
+        // }
       }
     }
   }
