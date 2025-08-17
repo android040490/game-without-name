@@ -59,7 +59,8 @@ export class PointerLockControlsSystem extends System {
       const { camera } = entity.getComponent(CameraComponent)!;
       const physicsComponent = entity.getComponent(PhysicsComponent)!;
 
-      physicsComponent.rigidBody?.setRotation(camera.quaternion, true);
+      const { y, w } = camera.quaternion;
+      physicsComponent.rigidBody?.setRotation({ x: 0, y, z: 0, w }, true);
     }
   }
 }
