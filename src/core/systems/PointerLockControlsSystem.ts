@@ -6,7 +6,7 @@ import { CameraManager } from "../managers/CameraManager";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 
-// TODO: maybe combine this with the player control system
+// TODO: currently this system is not used, but it can be useful in the future
 export class PointerLockControlsSystem extends System {
   private readonly cameraManager: CameraManager;
 
