@@ -30,8 +30,4 @@ export class PlayerControlComponent {
     this.acceleration = acceleration;
     this.damping = damping;
   }
-
-  set accelerate(value: boolean) {
-    this.speed = value ? this.maxSpeed : this.minSpeed;
-  }
 }

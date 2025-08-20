@@ -1,5 +1,4 @@
 import type { Collider, RigidBody } from "@dimforge/rapier3d";
-import * as THREE from "three";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
@@ -10,26 +9,31 @@ import { PlayerControlComponent } from "../components/PlayerControlComponent";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { PlayerAnimations } from "../constants/PlayerAnimations";
+import { DesktopInputManager } from "../managers/DesktopInputManager";
+import { InputManager, InputManagerEvents } from "../models/InputManager";
+import { CameraComponent } from "../components/CameraComponent";
+import { MobileInputManager } from "../managers/MobileInputManager";
+import { isMobile } from "../../helpers";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
   private readonly physicsManager: PhysicsManager;
-  private moveForward = false;
-  private moveLeft = false;
-  private moveBackward = false;
-  private moveRight = false;
-  private jumpInitiated = false;
-  private accelerate = false;
-  private attackInitiated = false;
+  private inputManager: InputManager;
+  private onGround: boolean = false;
+  private entity?: Entity;
 
   constructor(game: Game) {
     super(game);
 
     this.timeManager = game.timeManager;
     this.physicsManager = game.physicsManager;
+    this.inputManager = isMobile()
+      ? new MobileInputManager()
+      : new DesktopInputManager(game);
 
-    this.handleKeyboardEvent = this.handleKeyboardEvent.bind(this);
-    this.handleClick = this.handleClick.bind(this);
+    this.attack = this.attack.bind(this);
+    this.jump = this.jump.bind(this);
+    this.accelerate = this.accelerate.bind(this);
   }
 
   appliesTo(entity: Entity): boolean {
@@ -37,6 +41,7 @@ export class PlayerControlSystem extends System {
       PlayerControlComponent,
       PlayerConfigComponent,
       PhysicsComponent,
+      CameraComponent,
     );
   }
 
@@ -49,45 +54,55 @@ export class PlayerControlSystem extends System {
       return;
     }
     super.addEntity(entity);
-    this.setListeners();
+    this.entity = entity;
+
+    const cameraComponent = entity.getComponent(CameraComponent)!;
+    this.inputManager.setup(cameraComponent.camera);
+
+    this.inputManager.addEventListener("attack", this.attack);
+    this.inputManager.addEventListener("jump", this.jump);
+    this.inputManager.addEventListener("accelerate", this.accelerate);
   }
 
   removeEntity(entity: Entity): void {
     super.removeEntity(entity);
-    this.removeListeners();
+    this.inputManager.dispose();
+
+    this.inputManager.removeEventListener("attack", this.attack);
+    this.inputManager.removeEventListener("jump", this.jump);
+    this.inputManager.removeEventListener("accelerate", this.accelerate);
   }
 
   update(): void {
-    for (const [_, entity] of this.entities) {
-      const { rigidBody, collider } = entity.getComponent(PhysicsComponent)!;
-      const animationComponent = entity.getComponent(AnimationComponent);
-      const { height } = entity.getComponent(PlayerConfigComponent)!;
-      const playerControlComponent = entity.getComponent(
-        PlayerControlComponent,
-      )!;
-
-      if (!collider || !rigidBody) {
-        continue;
-      }
-
-      playerControlComponent.accelerate = this.accelerate;
-
-      const onTheGround = this.detectGround(rigidBody, collider, height);
-
-      this.computeNextVelocity(playerControlComponent, rigidBody, onTheGround);
-
-      if (this.jumpInitiated && onTheGround) {
-        this.jump(rigidBody);
-      }
-      this.jumpInitiated = false;
-
-      if (this.attackInitiated && animationComponent) {
-        this.attack(animationComponent);
-      }
+    if (!this.entity) {
+      return;
     }
+    const { rigidBody, collider } = this.entity.getComponent(PhysicsComponent)!;
+    const { height } = this.entity.getComponent(PlayerConfigComponent)!;
+    const playerControlComponent = this.entity.getComponent(
+      PlayerControlComponent,
+    )!;
+    const { camera } = this.entity.getComponent(CameraComponent)!;
+
+    if (!collider || !rigidBody) {
+      return;
+    }
+
+    this.onGround = this.detectGround(rigidBody, collider, height);
+
+    this.computeNextVelocity(playerControlComponent, rigidBody, this.onGround);
+
+    const { y, w } = camera.quaternion;
+    rigidBody?.setRotation({ x: 0, y, z: 0, w }, true);
   }
 
-  private jump(rigidBody: RigidBody): void {
+  private jump(): void {
+    const { rigidBody } = this.entity?.getComponent(PhysicsComponent) ?? {};
+
+    if (!rigidBody || !this.onGround) {
+      return;
+    }
+
     rigidBody.applyImpulse(
       {
         x: 0,
@@ -130,11 +145,7 @@ export class PlayerControlSystem extends System {
     const delta = this.timeManager.timeStep;
 
     // Compute movement direction
-    const direction = new THREE.Vector3(
-      Number(this.moveRight) - Number(this.moveLeft),
-      0,
-      Number(this.moveBackward) - Number(this.moveForward),
-    );
+    const direction = this.inputManager.playerLocalMovementDirection;
 
     if (direction.lengthSq() > 0 && onTheGround) {
       direction.normalize(); // Avoid diagonal speed boost
@@ -153,7 +164,6 @@ export class PlayerControlSystem extends System {
 
       // If the velocity is very small, set it to zero
       if (velocity.length() < 0.0001) {
-        console.log("Resetting velocity to zero");
         velocity.set(0, 0, 0);
       }
     }
@@ -166,57 +176,11 @@ export class PlayerControlSystem extends System {
     }
   }
 
-  private setListeners(): void {
-    document.addEventListener("keydown", this.handleKeyboardEvent);
-    document.addEventListener("keyup", this.handleKeyboardEvent);
-    document.addEventListener("click", this.handleClick);
-  }
-
-  private removeListeners(): void {
-    document.removeEventListener("keydown", this.handleKeyboardEvent);
-    document.removeEventListener("keyup", this.handleKeyboardEvent);
-    document.removeEventListener("click", this.handleClick);
-  }
-
-  private handleKeyboardEvent(event: KeyboardEvent): void {
-    const isKeyDown = event.type === "keydown";
-
-    switch (event.code) {
-      case "ArrowUp":
-      case "KeyW":
-        this.moveForward = isKeyDown;
-        break;
-
-      case "ArrowLeft":
-      case "KeyA":
-        this.moveLeft = isKeyDown;
-        break;
-
-      case "ArrowDown":
-      case "KeyS":
-        this.moveBackward = isKeyDown;
-        break;
-
-      case "ArrowRight":
-      case "KeyD":
-        this.moveRight = isKeyDown;
-        break;
-
-      case "Space":
-        if (isKeyDown) this.jumpInitiated = true;
-        break;
-
-      case "ShiftLeft":
-        this.accelerate = isKeyDown;
+  private attack(): void {
+    const animationComponent = this.entity?.getComponent(AnimationComponent);
+    if (!animationComponent) {
+      return;
     }
-  }
-
-  private handleClick(): void {
-    this.attackInitiated = true; // TODO: maybe create separate system PlayerAttackSystem
-  }
-
-  private attack(animationComponent: AnimationComponent): void {
-    this.attackInitiated = false;
 
     const randomAttackAnimation =
       PlayerAnimations.ATTACKS[
@@ -227,5 +191,19 @@ export class PlayerControlSystem extends System {
     animationComponent.completeHandler = () => {
       animationComponent.animation = PlayerAnimations.Idle;
     };
+  }
+
+  private accelerate(event: InputManagerEvents["accelerate"]): void {
+    const playerControlComponent = this.entity?.getComponent(
+      PlayerControlComponent,
+    );
+
+    if (!playerControlComponent) {
+      return;
+    }
+
+    playerControlComponent.speed = event.value
+      ? playerControlComponent.maxSpeed
+      : playerControlComponent.minSpeed;
   }
 }
