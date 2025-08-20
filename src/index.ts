@@ -1,3 +1,4 @@
+import "./ui";
 import { Game } from "./core/Game";
 import { Entity } from "./core/models/Entity";
 import { PositionComponent } from "./core/components/PositionComponent";
