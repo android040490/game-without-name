@@ -9,7 +9,6 @@ import { AnimationSystem } from "./AnimationSystem";
 import { CharacterMovementSystem } from "./CharacterMovementSystem";
 import { EnemySpawnSystem } from "./EnemySpawnSystem";
 import { CameraSystem } from "./CameraSystem";
-import { PointerLockControlsSystem } from "./PointerLockControlsSystem";
 import { PlayerControlSystem } from "./PlayerControlSystem";
 import { EnemyControlSystem } from "./EnemyControlSystem";
 import { PlayerFactorySystem } from "./PlayerFactorySystem";
@@ -29,7 +28,6 @@ export const systems: Constructor<System>[] = [
   WeaponSystem,
   CharacterFactorySystem,
   PlayerControlSystem,
-  PointerLockControlsSystem,
   CharacterMovementSystem,
   AnimationSystem,
   MeshFactorySystem,
