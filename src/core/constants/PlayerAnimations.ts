@@ -1,52 +1,40 @@
 import { AnimationData } from "../components/AnimationComponent";
 
 export type PlayerAnimationKey =
-  | "Idle"
-  | "Attack_01"
-  | "Attack_02"
-  | "Attack_03"
-  | "Attack_04";
+  | "Remington_Idle"
+  | "Remington_Reload"
+  | "Remington_Shot"
+  | "Remington_Walk";
 
 interface PlayerAnimationData extends AnimationData<PlayerAnimationKey> {
   type: "attack" | "idle" | "movement";
 }
 
 export class PlayerAnimations {
-  static readonly Idle: PlayerAnimationData = {
-    actionName: "Idle",
+  static readonly Remington_Idle: PlayerAnimationData = {
     type: "idle",
+    actionName: "Remington_Idle",
   };
-  static readonly Attack_01: PlayerAnimationData = {
+  static readonly Remington_Shot: PlayerAnimationData = {
     type: "attack",
-    actionName: "Attack_01",
+    actionName: "Remington_Shot",
     repetitions: 1,
-    timeScale: 1.5,
   };
-  static readonly Attack_02: PlayerAnimationData = {
-    type: "attack",
-    actionName: "Attack_02",
-    repetitions: 1,
-    timeScale: 1.5,
+  static readonly Remington_Walk: PlayerAnimationData = {
+    type: "movement",
+    actionName: "Remington_Walk",
   };
-  static readonly Attack_03: PlayerAnimationData = {
-    type: "attack",
-    actionName: "Attack_03",
+  static readonly Remington_Reload: PlayerAnimationData = {
+    type: "idle",
+    actionName: "Remington_Reload",
     repetitions: 1,
-    timeScale: 1.5,
-  };
-  static readonly Attack_04: PlayerAnimationData = {
-    type: "attack",
-    actionName: "Attack_04",
-    repetitions: 1,
-    timeScale: 1.5,
   };
 
   static readonly ALL: Record<PlayerAnimationKey, PlayerAnimationData> = {
-    Idle: PlayerAnimations.Idle,
-    Attack_01: PlayerAnimations.Attack_01,
-    Attack_02: PlayerAnimations.Attack_02,
-    Attack_03: PlayerAnimations.Attack_03,
-    Attack_04: PlayerAnimations.Attack_04,
+    Remington_Idle: PlayerAnimations.Remington_Idle,
+    Remington_Reload: PlayerAnimations.Remington_Reload,
+    Remington_Shot: PlayerAnimations.Remington_Shot,
+    Remington_Walk: PlayerAnimations.Remington_Walk,
   };
 
   static get ATTACKS(): PlayerAnimationData[] {

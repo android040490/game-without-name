@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { OrbitControls, PointerLockControls } from "three/addons/Addons.js";
+import { OrbitControls } from "three/addons/Addons.js";
 import { WindowSizeManager } from "./WindowSizeManager";
 import { Game } from "../Game";
 import eventBus, { EventBus } from "../event/EventBus";
@@ -64,10 +64,6 @@ export class CameraManager {
 
   setCamera(camera: THREE.PerspectiveCamera): void {
     this._camera = camera;
-  }
-
-  createPointerLockControls(camera: THREE.Camera): PointerLockControls {
-    return new PointerLockControls(camera, this.canvas);
   }
 
   private setControls(): void {

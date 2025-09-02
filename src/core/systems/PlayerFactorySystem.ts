@@ -16,6 +16,7 @@ import { InteractionGroups } from "../constants/InteractionGroups";
 import { WeaponAnchorComponent } from "../components/WeaponAnchorComponent";
 // import { MeshConfigComponent } from "../components/MeshConfigComponent";
 import { OwnerComponent } from "../components/OwnerComponent";
+import { CameraComponent } from "../components/CameraComponent";
 
 export class PlayerFactorySystem extends System {
   private readonly entityManager: EntityManager;
@@ -55,8 +56,13 @@ export class PlayerFactorySystem extends System {
       capsuleLength,
       isBoundingBoxVisible,
     );
+    const armsHolder = new THREE.Group();
+    armsHolder.name = "ArmsHolder";
+    armsHolder.position.y = height * 0.5 - 0.3;
+    capsule.add(armsHolder);
 
     let components: object[] = [
+      new CameraComponent({ cameraHolder: armsHolder }),
       new MeshComponent(capsule),
       new PhysicsComponent({
         colliderConfig: {
@@ -78,18 +84,22 @@ export class PlayerFactorySystem extends System {
 
       if (model.animations.length > 0) {
         components.push(
-          new AnimationComponent(armsMesh, model.animations, "Idle"),
+          new AnimationComponent(armsMesh, model.animations, "Remington_Idle"),
         );
       }
 
-      this.createWeapon(entity, armsMesh);
+      // this.createWeapon(entity, armsMesh);
 
-      capsule.add(armsMesh);
+      armsMesh.position.y -= 0.3;
+      armsMesh.position.z -= 0.15;
+      armsHolder.add(armsMesh);
     }
 
     entity.addComponents(components);
   }
 
+  // Unused logic for legacy arms model with sword
+  // @ts-ignore
   private createWeapon(player: Entity, armsMesh: THREE.Object3D): void {
     const swordMesh = armsMesh.getObjectByName("Proto_sword");
 
@@ -158,9 +168,12 @@ export class PlayerFactorySystem extends System {
   private prepareArmsModel(model: GLTF): THREE.Object3D {
     const modelMesh = model.scene;
     modelMesh.rotateY(Math.PI);
-    modelMesh.scale.setScalar(0.4);
-    modelMesh.position.y += 0.3;
-    modelMesh.position.z -= 0.4;
+    modelMesh.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.frustumCulled = false;
+      }
+    });
+    modelMesh.position.z += 0.35;
     return modelMesh;
   }
 }

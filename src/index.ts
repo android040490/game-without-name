@@ -7,7 +7,6 @@ import { RotationComponent } from "./core/components/RotationComponent";
 import { MeshConfigComponent } from "./core/components/MeshConfigComponent";
 import { TextureComponent } from "./core/components/TextureComponent";
 import { EnvironmentComponent } from "./core/components/EnvironmentComponent";
-import { CameraComponent } from "./core/components/CameraComponent";
 import { PlayerComponent } from "./core/components/PlayerComponent";
 import { PlayerControlComponent } from "./core/components/PlayerControlComponent";
 import { PlayerConfigComponent } from "./core/components/PlayerConfigComponent";
@@ -61,8 +60,9 @@ const createPlayer = () => {
   entity.addComponents([
     new PositionComponent(-40, 30, 150),
     new RotationComponent(0, 0, 0, 1),
-    new PlayerConfigComponent({ armsModelPath: "models/arms.glb" }),
-    new CameraComponent({ offsetHeight: 0.8 }),
+    new PlayerConfigComponent({
+      armsModelPath: "models/arms.glb",
+    }),
     new PlayerComponent(),
     new PlayerControlComponent(),
   ]);

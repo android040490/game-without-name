@@ -10,10 +10,15 @@ import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { PlayerAnimations } from "../constants/PlayerAnimations";
 import { DesktopInputManager } from "../managers/DesktopInputManager";
-import { InputManager, InputManagerEvents } from "../models/InputManager";
-import { CameraComponent } from "../components/CameraComponent";
+import {
+  InputManager,
+  InputManagerConfig,
+  InputManagerEvents,
+} from "../models/InputManager";
 import { MobileInputManager } from "../managers/MobileInputManager";
 import { isMobile } from "../../helpers";
+import { MeshComponent } from "../components/MeshComponent";
+import { Euler, Quaternion } from "three";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -21,15 +26,22 @@ export class PlayerControlSystem extends System {
   private inputManager: InputManager;
   private onGround: boolean = false;
   private entity?: Entity;
+  private _quaternion = new Quaternion();
+  private _euler = new Euler(0, 0, 0, "YXZ");
 
   constructor(game: Game) {
     super(game);
 
     this.timeManager = game.timeManager;
     this.physicsManager = game.physicsManager;
+
+    const inputManagerConfig: InputManagerConfig = {
+      minPolarAngle: 0,
+      maxPolarAngle: 2.8,
+    };
     this.inputManager = isMobile()
-      ? new MobileInputManager()
-      : new DesktopInputManager(game);
+      ? new MobileInputManager(inputManagerConfig)
+      : new DesktopInputManager(inputManagerConfig);
 
     this.attack = this.attack.bind(this);
     this.jump = this.jump.bind(this);
@@ -41,7 +53,6 @@ export class PlayerControlSystem extends System {
       PlayerControlComponent,
       PlayerConfigComponent,
       PhysicsComponent,
-      CameraComponent,
     );
   }
 
@@ -56,8 +67,7 @@ export class PlayerControlSystem extends System {
     super.addEntity(entity);
     this.entity = entity;
 
-    const cameraComponent = entity.getComponent(CameraComponent)!;
-    this.inputManager.setup(cameraComponent.camera);
+    this.inputManager.setup();
 
     this.inputManager.addEventListener("attack", this.attack);
     this.inputManager.addEventListener("jump", this.jump);
@@ -82,9 +92,11 @@ export class PlayerControlSystem extends System {
     const playerControlComponent = this.entity.getComponent(
       PlayerControlComponent,
     )!;
-    const { camera } = this.entity.getComponent(CameraComponent)!;
+    const armsHolder = this.entity
+      .getComponent(MeshComponent)
+      ?.object.getObjectByName("ArmsHolder");
 
-    if (!collider || !rigidBody) {
+    if (!collider || !rigidBody || !rigidBody.isValid()) {
       return;
     }
 
@@ -92,8 +104,12 @@ export class PlayerControlSystem extends System {
 
     this.computeNextVelocity(playerControlComponent, rigidBody, this.onGround);
 
-    const { y, w } = camera.quaternion;
-    rigidBody?.setRotation({ x: 0, y, z: 0, w }, true);
+    const pitch = this.inputManager.pitch;
+    const yaw = this.inputManager.yaw;
+    this._euler.set(pitch, yaw, 0);
+    const rotation = this._quaternion.setFromEuler(this._euler);
+    rigidBody?.setRotation({ x: 0, y: rotation.y, z: 0, w: rotation.w }, true);
+    armsHolder?.rotation.set(pitch, 0, 0);
   }
 
   private jump(): void {
@@ -189,7 +205,7 @@ export class PlayerControlSystem extends System {
 
     animationComponent.animation = randomAttackAnimation;
     animationComponent.completeHandler = () => {
-      animationComponent.animation = PlayerAnimations.Idle;
+      animationComponent.animation = PlayerAnimations.Remington_Idle;
     };
   }
 
