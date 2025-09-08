@@ -1,12 +1,11 @@
-import { DeadMarkerComponent } from "../components/DeadMarkerComponent";
-import { DespawnTimerComponent } from "../components/DespawnTimerComponent";
+import { LifetimeComponent } from "../components/LifetimeComponent";
 import { Game } from "../Game";
 import { EntityManager } from "../managers/EntityManager";
 import { TimeManager } from "../managers/TimeManager";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 
-export class CharacterCleanupSystem extends System {
+export class LifetimeSystem extends System {
   private readonly entityManager: EntityManager;
   private readonly timeManager: TimeManager;
 
@@ -18,15 +17,15 @@ export class CharacterCleanupSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponents(DeadMarkerComponent, DespawnTimerComponent);
+    return entity.hasComponents(LifetimeComponent);
   }
 
   update(): void {
     for (const [_, entity] of this.entities) {
-      const timer = entity.getComponent(DespawnTimerComponent)!;
-      timer.timeLeftInSeconds -= this.timeManager.timeStep;
+      const lifeTime = entity.getComponent(LifetimeComponent)!;
+      lifeTime.timeLeft -= this.timeManager.timeStep;
 
-      if (timer.timeLeftInSeconds <= 0) {
+      if (lifeTime.timeLeft <= 0) {
         this.entityManager.removeEntity(entity);
       }
     }

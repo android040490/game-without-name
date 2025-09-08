@@ -17,6 +17,7 @@ import { EnemyStates } from "../constants/EnemyStates";
 import { AnimationComponent } from "../components/AnimationComponent";
 import { DeadMarkerComponent } from "../components/DeadMarkerComponent";
 import { DamagedMarkerComponent } from "../components/DamagedMarkerComponent";
+import { LifetimeComponent } from "../components/LifetimeComponent";
 
 export class EnemyControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -58,6 +59,9 @@ export class EnemyControlSystem extends System {
       const animationComponent = entity.getComponent(AnimationComponent);
 
       if (stateComponent.currentState === EnemyStates.Dead) {
+        if (!entity.hasComponent(LifetimeComponent)) {
+          entity.addComponent(new LifetimeComponent(5));
+        }
         continue;
       }
 

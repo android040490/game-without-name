@@ -18,7 +18,9 @@ import {
 import { MobileInputManager } from "../managers/MobileInputManager";
 import { isMobile } from "../../helpers";
 import { MeshComponent } from "../components/MeshComponent";
-import { Euler, Quaternion } from "three";
+import { Euler, Quaternion, Vector3 } from "three";
+import { CameraComponent } from "../components/CameraComponent";
+import { WeaponComponent } from "../components/WeaponComponent";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -207,6 +209,20 @@ export class PlayerControlSystem extends System {
     animationComponent.completeHandler = () => {
       animationComponent.animation = PlayerAnimations.Remington_Idle;
     };
+    this.fire();
+  }
+
+  private fire(): void {
+    const weapon = this.entity?.getComponent(WeaponComponent);
+    if (!weapon) return;
+
+    const direction = new Vector3();
+    this.entity
+      ?.getComponent(CameraComponent)
+      ?.camera.getWorldDirection(direction);
+
+    weapon.isAttacking = true;
+    weapon.direction = direction;
   }
 
   private accelerate(event: InputManagerEvents["accelerate"]): void {
