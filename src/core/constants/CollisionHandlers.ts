@@ -19,17 +19,25 @@ export const COLLISION_HANDLERS: CollisionHandler[] = [
     handler: (enemy: Entity, bullet: Entity) => {
       const { damage } = bullet.getComponent(BulletComponent)!;
 
-      enemy.addComponent(new MakeDamageComponent(damage));
+      const makeDamage = enemy.getComponent(MakeDamageComponent);
+
+      makeDamage
+        ? (makeDamage.damage += damage)
+        : enemy.addComponent(new MakeDamageComponent(damage));
     },
   },
   {
     entity1Components: [],
     entity2Components: [BulletComponent],
-    handler: (anyEntity: Entity, bullet: Entity) => {
-      const physicsComponent = anyEntity.getComponent(PhysicsComponent);
+    handler: (hitEntity: Entity, bullet: Entity) => {
+      const physicsComponent = hitEntity.getComponent(PhysicsComponent);
       const lifeTime = bullet.getComponent(LifetimeComponent);
 
-      if (lifeTime && !physicsComponent?.collider?.isSensor()) {
+      if (
+        lifeTime &&
+        !physicsComponent?.collider?.isSensor() &&
+        !hitEntity.hasComponent(BulletComponent)
+      ) {
         lifeTime.timeLeft = 0;
       }
     },

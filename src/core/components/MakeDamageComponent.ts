@@ -1,3 +1,3 @@
 export class MakeDamageComponent {
-  constructor(public readonly amount: number) {}
+  constructor(public damage: number) {}
 }

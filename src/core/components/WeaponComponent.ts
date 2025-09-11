@@ -10,6 +10,8 @@ interface WeaponConfig {
   bulletSpread: number;
   projectileSpeed: number;
   lastAttackTime: number;
+  bulletSize: number;
+  bulletDensity: number;
 }
 
 export class WeaponComponent {
@@ -22,6 +24,8 @@ export class WeaponComponent {
   public bulletSpread: number;
   public projectileSpeed: number;
   public lastAttackTime: number;
+  public bulletSize: number;
+  public bulletDensity: number;
   public isAttacking: boolean = false;
   public direction: Vector3 = new Vector3();
 
@@ -31,6 +35,8 @@ export class WeaponComponent {
     damage,
     range,
     fireRate,
+    bulletSize,
+    bulletDensity,
     bulletSpread = 0,
     bulletCount = 1,
     projectileSpeed = 0,
@@ -45,5 +51,7 @@ export class WeaponComponent {
     this.bulletSpread = bulletSpread;
     this.projectileSpeed = projectileSpeed;
     this.lastAttackTime = lastAttackTime;
+    this.bulletSize = bulletSize;
+    this.bulletDensity = bulletDensity;
   }
 }

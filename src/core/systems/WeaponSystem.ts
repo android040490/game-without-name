@@ -75,39 +75,62 @@ export class WeaponSystem extends System {
   }
 
   private spawnProjectiles(entity: Entity, weapon: WeaponComponent): void {
-    const { direction, projectileSpeed, damage, range } = weapon;
+    const {
+      direction,
+      projectileSpeed,
+      damage,
+      range,
+      bulletCount,
+      bulletSpread,
+      bulletSize,
+      bulletDensity,
+    } = weapon;
 
-    const positon = entity
+    const position = entity
       ?.getComponent(PositionComponent)!
       .position.clone()
       .add(direction.clone().multiplyScalar(2));
-    const velocity = direction.clone().multiplyScalar(projectileSpeed);
-    const bulletEntity = new Entity();
 
-    bulletEntity.addComponents([
-      new MeshComponent(
-        new THREE.Mesh(
-          new THREE.SphereGeometry(0.2, 8, 8),
-          new THREE.MeshBasicMaterial({ color: 0xff0000 }),
+    for (let i = 0; i < bulletCount; i++) {
+      const bulletEntity = new Entity();
+
+      const spreadDir = direction.clone();
+
+      if (bulletSpread > 0) {
+        spreadDir.x += (Math.random() - 0.5) * bulletSpread;
+        spreadDir.y += (Math.random() - 0.5) * bulletSpread;
+        spreadDir.z += (Math.random() - 0.5) * bulletSpread;
+        spreadDir.normalize();
+      }
+      const velocity = spreadDir.clone().multiplyScalar(projectileSpeed);
+
+      const muzzlePos = position.clone().add(spreadDir.clone());
+
+      bulletEntity.addComponents([
+        new MeshComponent(
+          new THREE.Mesh(
+            new THREE.SphereGeometry(bulletSize, 1, 1),
+            new THREE.MeshBasicMaterial({ color: 0x000000 }),
+          ),
         ),
-      ),
-      new PhysicsComponent({
-        rigidBodyConfig: {
-          rigidBodyType: "dynamic",
-          ccdEnabled: true,
-          linvel: velocity,
-        },
-        colliderConfig: {
-          shape: { type: "sphere", radius: 0.2 },
-          density: 0.3,
-          activeEvents: ActiveEvents.COLLISION_EVENTS,
-        },
-      }),
-      new PositionComponent(positon!.x, positon!.y, positon!.z),
-      new BulletComponent(damage),
-      new LifetimeComponent(range / projectileSpeed),
-    ]);
+        new PhysicsComponent({
+          rigidBodyConfig: {
+            rigidBodyType: "dynamic",
+            ccdEnabled: true,
+            linvel: velocity,
+          },
+          colliderConfig: {
+            shape: { type: "sphere", radius: bulletSize },
+            density: bulletDensity,
+            activeEvents: ActiveEvents.COLLISION_EVENTS,
+          },
+        }),
+        new PositionComponent(muzzlePos!.x, muzzlePos!.y, muzzlePos!.z),
+        new BulletComponent(damage),
+        new LifetimeComponent(range / projectileSpeed),
+      ]);
 
-    this.entityManager.addEntity(bulletEntity);
+      this.entityManager.addEntity(bulletEntity);
+    }
   }
 }
