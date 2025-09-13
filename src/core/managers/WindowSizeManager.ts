@@ -2,12 +2,19 @@ import eventBus, { EventBus } from "../event/EventBus";
 import { WindowResized } from "../event/WindowResized";
 
 export class WindowSizeManager {
+  static instance: WindowSizeManager;
   private _width!: number;
   private _height!: number;
   private _pixelRatio!: number;
   private readonly eventBus: EventBus = eventBus;
 
   constructor() {
+    if (WindowSizeManager.instance) {
+      return WindowSizeManager.instance;
+    }
+
+    WindowSizeManager.instance = this;
+
     this.setSizes();
 
     window.addEventListener("resize", () => {

@@ -10,6 +10,7 @@ import { Game } from "../Game";
 import { EntityManager } from "../managers/EntityManager";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { LifetimeComponent } from "../components/LifetimeComponent";
+import { MuzzleFlash } from "../custom-objects/MuzzleFlash";
 
 export class WeaponSystem extends System {
   private entityManager: EntityManager;
@@ -85,6 +86,13 @@ export class WeaponSystem extends System {
       bulletSize,
       bulletDensity,
     } = weapon;
+    const muzzleAnchor = entity
+      .getComponent(MeshComponent)
+      ?.object.getObjectByName("Muzzle");
+
+    if (muzzleAnchor) {
+      new MuzzleFlash({ muzzleRef: muzzleAnchor, sparkCount: 25 });
+    }
 
     const position = entity
       ?.getComponent(PositionComponent)!

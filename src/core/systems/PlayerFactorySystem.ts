@@ -78,7 +78,7 @@ export class PlayerFactorySystem extends System {
         bulletSize: 0.04,
         bulletDensity: 20,
         bulletSpread: 0.07,
-        projectileSpeed: 200,
+        projectileSpeed: 400,
         lastAttackTime: 0,
       }),
     ];
