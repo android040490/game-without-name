@@ -108,7 +108,9 @@ export class WeaponSystem extends System {
         new MeshComponent(
           new THREE.Mesh(
             new THREE.SphereGeometry(bulletSize, 1, 1),
-            new THREE.MeshBasicMaterial({ color: 0x000000 }),
+            new THREE.MeshBasicMaterial({
+              color: new THREE.Color(1, 0.7686, 0),
+            }),
           ),
         ),
         new PhysicsComponent({

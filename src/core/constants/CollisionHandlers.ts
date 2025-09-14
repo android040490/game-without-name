@@ -38,7 +38,7 @@ export const COLLISION_HANDLERS: CollisionHandler[] = [
         !physicsComponent?.collider?.isSensor() &&
         !hitEntity.hasComponent(BulletComponent)
       ) {
-        lifeTime.timeLeft = 0;
+        lifeTime.timeLeft = 0.05;
       }
     },
   },
