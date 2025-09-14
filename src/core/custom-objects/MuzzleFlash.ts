@@ -38,7 +38,7 @@ export class MuzzleFlash {
       muzzleRef,
       sparkCount = 20,
       duration = 0.07,
-      sparkSize = 0.3,
+      sparkSize = 0.7,
     } = config;
     this.muzzleRef = muzzleRef;
     this.sparkCount = sparkCount;
