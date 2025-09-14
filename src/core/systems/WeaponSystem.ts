@@ -21,7 +21,7 @@ export class WeaponSystem extends System {
   }
 
   appliesTo(entity: Entity): boolean {
-    return entity.hasComponents(WeaponComponent, PositionComponent);
+    return entity.hasComponents(WeaponComponent);
   }
 
   // update(): void {
@@ -52,12 +52,6 @@ export class WeaponSystem extends System {
     const now = performance.now() / 1000;
 
     for (const [_, entity] of this.entities) {
-      if (
-        !entity.hasComponent(PositionComponent) ||
-        !entity.hasComponent(WeaponComponent)
-      )
-        continue;
-
       const weapon = entity.getComponent(WeaponComponent)!;
 
       if (!weapon.isAttacking) continue;
@@ -94,11 +88,6 @@ export class WeaponSystem extends System {
       new MuzzleFlash({ muzzleRef: muzzleAnchor, sparkCount: 25 });
     }
 
-    const position = entity
-      ?.getComponent(PositionComponent)!
-      .position.clone()
-      .add(direction.clone().multiplyScalar(2));
-
     for (let i = 0; i < bulletCount; i++) {
       const bulletEntity = new Entity();
 
@@ -112,7 +101,8 @@ export class WeaponSystem extends System {
       }
       const velocity = spreadDir.clone().multiplyScalar(projectileSpeed);
 
-      const muzzlePos = position.clone().add(spreadDir.clone());
+      const muzzlePos = new THREE.Vector3();
+      muzzleAnchor?.getWorldPosition(muzzlePos);
 
       bulletEntity.addComponents([
         new MeshComponent(
