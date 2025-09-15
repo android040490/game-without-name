@@ -11,13 +11,19 @@ import { EntityManager } from "../managers/EntityManager";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { LifetimeComponent } from "../components/LifetimeComponent";
 import { MuzzleFlash } from "../custom-objects/MuzzleFlash";
+import { Crosshair } from "../../ui/Crosshair";
+import { PlayerComponent } from "../components/PlayerComponent";
 
 export class WeaponSystem extends System {
   private entityManager: EntityManager;
+  private crosshairElement: Crosshair | null;
 
   constructor(game: Game) {
     super(game);
     this.entityManager = game.entityManager;
+
+    this.crosshairElement = new Crosshair();
+    document.body.appendChild(this.crosshairElement);
   }
 
   appliesTo(entity: Entity): boolean {
@@ -83,6 +89,10 @@ export class WeaponSystem extends System {
     const muzzleAnchor = entity
       .getComponent(MeshComponent)
       ?.object.getObjectByName("Muzzle");
+
+    if (entity.hasComponent(PlayerComponent)) {
+      this.crosshairElement?.animateCrosshairOnFire();
+    }
 
     if (muzzleAnchor) {
       new MuzzleFlash({ muzzleRef: muzzleAnchor, sparkCount: 25 });

@@ -1,0 +1,50 @@
+.crosshair {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  width: 24px;
+  height: 24px;
+  opacity: 0.5;
+}
+
+.stick {
+  position: absolute;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(93, 93, 93);
+  border-radius: 2px;
+}
+
+.top {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 8px;
+  transform: translateX(-50%);
+}
+
+.bottom {
+  left: 50%;
+  bottom: 0;
+  width: 2px;
+  height: 8px;
+  transform: translateX(-50%);
+}
+
+.left {
+  top: 50%;
+  left: 0;
+  height: 2px;
+  width: 8px;
+  transform: translateY(-50%);
+}
+
+.right {
+  top: 50%;
+  right: 0;
+  height: 2px;
+  width: 8px;
+  transform: translateY(-50%);
+}
