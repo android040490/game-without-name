@@ -12,6 +12,10 @@ import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
 import { WeaponComponent } from "../components/WeaponComponent";
 import { InteractionGroups } from "../constants/InteractionGroups";
 import { CameraComponent } from "../components/CameraComponent";
+import {
+  PlayerState,
+  PlayerStateComponent,
+} from "../components/PlayerStateComponent";
 
 export class PlayerFactorySystem extends System {
   private readonly resourcesManager: ResourcesManager;
@@ -81,6 +85,7 @@ export class PlayerFactorySystem extends System {
         projectileSpeed: 400,
         lastAttackTime: 0,
       }),
+      new PlayerStateComponent(PlayerState.Idle),
     ];
 
     model = await this.resourcesManager.loadModel(armsModelPath);

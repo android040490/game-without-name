@@ -14,6 +14,7 @@ export class PlayerControlComponent {
   public damping: number;
   public velocity: Vector3;
   public speed: number;
+  public onGround = false;
 
   constructor(config?: Config) {
     const {

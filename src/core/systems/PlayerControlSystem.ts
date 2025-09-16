@@ -7,8 +7,6 @@ import { TimeManager } from "../managers/TimeManager";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { PlayerControlComponent } from "../components/PlayerControlComponent";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
-import { AnimationComponent } from "../components/AnimationComponent";
-import { PlayerAnimations } from "../constants/PlayerAnimations";
 import { DesktopInputManager } from "../managers/DesktopInputManager";
 import {
   InputManager,
@@ -26,7 +24,6 @@ export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
   private readonly physicsManager: PhysicsManager;
   private inputManager: InputManager;
-  private onGround: boolean = false;
   private entity?: Entity;
   private _quaternion = new Quaternion();
   private _euler = new Euler(0, 0, 0, "YXZ");
@@ -102,9 +99,10 @@ export class PlayerControlSystem extends System {
       return;
     }
 
-    this.onGround = this.detectGround(rigidBody, collider, height);
+    const onGround = this.detectGround(rigidBody, collider, height);
+    playerControlComponent.onGround = onGround;
 
-    this.computeNextVelocity(playerControlComponent, rigidBody, this.onGround);
+    this.computeNextVelocity(playerControlComponent, rigidBody, onGround);
 
     const pitch = this.inputManager.pitch;
     const yaw = this.inputManager.yaw;
@@ -116,8 +114,9 @@ export class PlayerControlSystem extends System {
 
   private jump(): void {
     const { rigidBody } = this.entity?.getComponent(PhysicsComponent) ?? {};
+    const { onGround } = this.entity?.getComponent(PlayerControlComponent)!;
 
-    if (!rigidBody || !this.onGround) {
+    if (!rigidBody || !onGround) {
       return;
     }
 
@@ -195,33 +194,21 @@ export class PlayerControlSystem extends System {
   }
 
   private attack(): void {
-    const animationComponent = this.entity?.getComponent(AnimationComponent);
-    if (!animationComponent) {
-      return;
-    }
-
-    const randomAttackAnimation =
-      PlayerAnimations.ATTACKS[
-        Math.floor(Math.random() * PlayerAnimations.ATTACKS.length)
-      ];
-
-    animationComponent.animation = randomAttackAnimation;
-    animationComponent.completeHandler = () => {
-      animationComponent.animation = PlayerAnimations.Remington_Idle;
-    };
     this.fire();
   }
 
   private fire(): void {
     const weapon = this.entity?.getComponent(WeaponComponent);
-    if (!weapon) return;
+    if (!weapon || !weapon.canShoot) {
+      return;
+    }
 
     const direction = new Vector3();
     this.entity
       ?.getComponent(CameraComponent)
       ?.camera.getWorldDirection(direction);
 
-    weapon.isAttacking = true;
+    weapon.isShotInitiated = true;
     weapon.direction = direction;
   }
 

@@ -26,7 +26,8 @@ export class WeaponComponent {
   public lastAttackTime: number;
   public bulletSize: number;
   public bulletDensity: number;
-  public isAttacking: boolean = false;
+  public isShotInitiated: boolean = false;
+  public canShoot: boolean = true;
   public direction: Vector3 = new Vector3();
 
   constructor({

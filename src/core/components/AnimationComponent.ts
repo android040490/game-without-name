@@ -39,8 +39,8 @@ export class AnimationComponent {
     this.handleComplete = this.handleComplete.bind(this);
   }
 
-  set animation(value: AnimationData) {
-    const { actionName, repetitions = Infinity, timeScale = 1 } = value;
+  set animation(value: AnimationData | undefined) {
+    const { actionName, repetitions = Infinity, timeScale = 1 } = value ?? {};
 
     this.currentActionName = actionName;
     this.repetitions = repetitions;

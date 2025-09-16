@@ -24,22 +24,14 @@ export class PlayerAnimations {
     type: "movement",
     actionName: "Remington_Walk",
   };
+  static readonly Remington_Run: PlayerAnimationData = {
+    type: "movement",
+    actionName: "Remington_Walk",
+    timeScale: 2,
+  };
   static readonly Remington_Reload: PlayerAnimationData = {
     type: "idle",
     actionName: "Remington_Reload",
     repetitions: 1,
   };
-
-  static readonly ALL: Record<PlayerAnimationKey, PlayerAnimationData> = {
-    Remington_Idle: PlayerAnimations.Remington_Idle,
-    Remington_Reload: PlayerAnimations.Remington_Reload,
-    Remington_Shot: PlayerAnimations.Remington_Shot,
-    Remington_Walk: PlayerAnimations.Remington_Walk,
-  };
-
-  static get ATTACKS(): PlayerAnimationData[] {
-    return Object.values(this.ALL).filter(
-      (animationData) => animationData.type === "attack",
-    );
-  }
 }

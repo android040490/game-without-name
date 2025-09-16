@@ -60,11 +60,11 @@ export class WeaponSystem extends System {
     for (const [_, entity] of this.entities) {
       const weapon = entity.getComponent(WeaponComponent)!;
 
-      if (!weapon.isAttacking) continue;
+      weapon.canShoot = !(now - weapon.lastAttackTime < 1 / weapon.fireRate);
 
-      weapon.isAttacking = false;
-      if (now - weapon.lastAttackTime < 1 / weapon.fireRate) continue;
+      if (!weapon.isShotInitiated) continue;
 
+      weapon.isShotInitiated = false;
       weapon.lastAttackTime = now;
 
       if (weapon.type === "ranged") {
