@@ -13,10 +13,10 @@ export default class Sky extends THREE.Mesh<
     const material = new THREE.ShaderMaterial({
       name: "SkyShader",
       uniforms: {
-        turbidity: { value: 2 },
-        rayleigh: { value: 1 },
-        mieCoefficient: { value: 5e-3 },
-        mieDirectionalG: { value: 0.8 },
+        turbidity: { value: 3 },
+        rayleigh: { value: 3 },
+        mieCoefficient: { value: 0.1 },
+        mieDirectionalG: { value: 0.9999 },
         sunPosition: { value: new THREE.Vector3() },
         up: { value: new THREE.Vector3(0, 1, 0) },
         uOpacity: { value: 1 },
@@ -26,8 +26,16 @@ export default class Sky extends THREE.Mesh<
       side: THREE.BackSide,
       depthWrite: false,
       transparent: true,
+      blending: THREE.AdditiveBlending,
     });
     super(new THREE.BoxGeometry(1, 1, 1), material);
     this.isSky = true;
+
+    this.scale.setScalar(450000);
+  }
+
+  dispose(): void {
+    this.geometry.dispose();
+    this.material.dispose();
   }
 }
