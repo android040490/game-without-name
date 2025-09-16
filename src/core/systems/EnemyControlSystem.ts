@@ -62,6 +62,9 @@ export class EnemyControlSystem extends System {
         if (!entity.hasComponent(LifetimeComponent)) {
           entity.addComponent(new LifetimeComponent(5));
         }
+        if (animationComponent) {
+          animationComponent.animation = undefined;
+        }
         continue;
       }
 
