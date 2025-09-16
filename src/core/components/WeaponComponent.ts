@@ -1,4 +1,5 @@
-import { Vector3 } from "three";
+import { Object3D, Vector3 } from "three";
+import { MuzzleFlash } from "../custom-objects/MuzzleFlash";
 
 interface WeaponConfig {
   name: string;
@@ -12,6 +13,7 @@ interface WeaponConfig {
   lastAttackTime: number;
   bulletSize: number;
   bulletDensity: number;
+  muzzleRef?: Object3D;
 }
 
 export class WeaponComponent {
@@ -29,6 +31,7 @@ export class WeaponComponent {
   public isShotInitiated: boolean = false;
   public canShoot: boolean = true;
   public direction: Vector3 = new Vector3();
+  public muzzleFlash?: MuzzleFlash;
 
   constructor({
     name,
@@ -37,6 +40,7 @@ export class WeaponComponent {
     range,
     fireRate,
     bulletSize,
+    muzzleRef,
     bulletDensity,
     bulletSpread = 0,
     bulletCount = 1,
@@ -54,5 +58,8 @@ export class WeaponComponent {
     this.lastAttackTime = lastAttackTime;
     this.bulletSize = bulletSize;
     this.bulletDensity = bulletDensity;
+    if (muzzleRef) {
+      this.muzzleFlash = new MuzzleFlash({ muzzleRef });
+    }
   }
 }

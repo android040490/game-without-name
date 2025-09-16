@@ -42,8 +42,7 @@ export class PlayerFactorySystem extends System {
     const { armsModelPath, height, isBoundingBoxVisible } = entity.getComponent(
       PlayerConfigComponent,
     )!;
-
-    let model: GLTF | undefined;
+    let components: object[] = [];
 
     const radius = height * 0.3;
     const capsuleLength = height - radius * 2;
@@ -58,7 +57,25 @@ export class PlayerFactorySystem extends System {
     armsHolder.position.y = height * 0.5 - 0.3;
     capsule.add(armsHolder);
 
-    let components: object[] = [
+    const model = await this.resourcesManager.loadModel(armsModelPath);
+
+    if (model) {
+      const armsMesh = this.prepareArmsModel(model);
+
+      if (model.animations.length > 0) {
+        components.push(
+          new AnimationComponent(armsMesh, model.animations, "Remington_Idle"),
+        );
+      }
+
+      // this.createWeapon(entity, armsMesh);
+
+      armsMesh.position.y -= 0.3;
+      armsMesh.position.z -= 0.15;
+      armsHolder.add(armsMesh);
+    }
+
+    components.push(
       new CameraComponent({ cameraHolder: armsHolder }),
       new MeshComponent(capsule),
       new PhysicsComponent({
@@ -84,27 +101,10 @@ export class PlayerFactorySystem extends System {
         bulletSpread: 0.07,
         projectileSpeed: 400,
         lastAttackTime: 0,
+        muzzleRef: armsHolder.getObjectByName("Muzzle"),
       }),
       new PlayerStateComponent(PlayerState.Idle),
-    ];
-
-    model = await this.resourcesManager.loadModel(armsModelPath);
-
-    if (model) {
-      const armsMesh = this.prepareArmsModel(model);
-
-      if (model.animations.length > 0) {
-        components.push(
-          new AnimationComponent(armsMesh, model.animations, "Remington_Idle"),
-        );
-      }
-
-      // this.createWeapon(entity, armsMesh);
-
-      armsMesh.position.y -= 0.3;
-      armsMesh.position.z -= 0.15;
-      armsHolder.add(armsMesh);
-    }
+    );
 
     entity.addComponents(components);
   }

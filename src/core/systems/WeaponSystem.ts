@@ -10,7 +10,6 @@ import { Game } from "../Game";
 import { EntityManager } from "../managers/EntityManager";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { LifetimeComponent } from "../components/LifetimeComponent";
-import { MuzzleFlash } from "../custom-objects/MuzzleFlash";
 import { Crosshair } from "../../ui/Crosshair";
 import { PlayerComponent } from "../components/PlayerComponent";
 
@@ -85,6 +84,7 @@ export class WeaponSystem extends System {
       bulletSpread,
       bulletSize,
       bulletDensity,
+      muzzleFlash,
     } = weapon;
     const muzzleAnchor = entity
       .getComponent(MeshComponent)
@@ -94,9 +94,7 @@ export class WeaponSystem extends System {
       this.crosshairElement?.animateCrosshairOnFire();
     }
 
-    if (muzzleAnchor) {
-      new MuzzleFlash({ muzzleRef: muzzleAnchor, sparkCount: 25 });
-    }
+    muzzleFlash?.flash();
 
     for (let i = 0; i < bulletCount; i++) {
       const bulletEntity = new Entity();
