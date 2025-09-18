@@ -19,6 +19,7 @@ import { EnergyBarSystem } from "./EnergyBarSystem";
 import { JointSystem } from "./JointSystem";
 import { LifetimeSystem } from "./LifetimeSystem";
 import { PlayerStateMachineSystem } from "./PlayerStateMachineSystem";
+import { PlayerAnimationSystem } from "./PlayerAnimationSystem";
 
 // The order of the systems is important because it will affect the rendering result and the behavior of the application.
 export const systems: Constructor<System>[] = [
@@ -29,6 +30,7 @@ export const systems: Constructor<System>[] = [
   CharacterFactorySystem,
   PlayerControlSystem,
   PlayerStateMachineSystem,
+  PlayerAnimationSystem,
   WeaponSystem,
   CharacterMovementSystem,
   AnimationSystem,

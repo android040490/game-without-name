@@ -1,8 +1,9 @@
 import { Object3D, Vector3 } from "three";
 import { MuzzleFlash } from "../custom-objects/MuzzleFlash";
+import { Weapon } from "../types/weapon";
 
 interface WeaponConfig {
-  name: string;
+  name: Weapon;
   type: "melee" | "ranged";
   damage: number;
   range: number;
@@ -13,11 +14,14 @@ interface WeaponConfig {
   lastAttackTime: number;
   bulletSize: number;
   bulletDensity: number;
+  ammoInMagazine: number;
+  magazineSize: number;
+  totalAmmo: number;
   muzzleRef?: Object3D;
 }
 
 export class WeaponComponent {
-  public name: string;
+  public name: Weapon;
   public type: "melee" | "ranged";
   public damage: number;
   public range: number;
@@ -29,8 +33,11 @@ export class WeaponComponent {
   public bulletSize: number;
   public bulletDensity: number;
   public isShotInitiated: boolean = false;
-  public canShoot: boolean = true;
   public direction: Vector3 = new Vector3();
+  public totalAmmo: number;
+  public magazineSize: number;
+  public ammoInMagazine: number;
+  public isReloadInitiated: boolean = false;
   public muzzleFlash?: MuzzleFlash;
 
   constructor({
@@ -42,6 +49,9 @@ export class WeaponComponent {
     bulletSize,
     muzzleRef,
     bulletDensity,
+    ammoInMagazine,
+    totalAmmo,
+    magazineSize,
     bulletSpread = 0,
     bulletCount = 1,
     projectileSpeed = 0,
@@ -58,8 +68,15 @@ export class WeaponComponent {
     this.lastAttackTime = lastAttackTime;
     this.bulletSize = bulletSize;
     this.bulletDensity = bulletDensity;
+    this.ammoInMagazine = ammoInMagazine;
+    this.totalAmmo = totalAmmo;
+    this.magazineSize = magazineSize;
     if (muzzleRef) {
       this.muzzleFlash = new MuzzleFlash({ muzzleRef });
     }
+  }
+
+  get isMagazineEmpty(): boolean {
+    return this.ammoInMagazine <= 0;
   }
 }

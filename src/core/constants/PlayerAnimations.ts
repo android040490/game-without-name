@@ -6,7 +6,7 @@ export type PlayerAnimationKey =
   | "Remington_Shot"
   | "Remington_Walk";
 
-interface PlayerAnimationData extends AnimationData<PlayerAnimationKey> {
+export interface PlayerAnimationData extends AnimationData<PlayerAnimationKey> {
   type: "attack" | "idle" | "movement";
 }
 
@@ -32,6 +32,7 @@ export class PlayerAnimations {
   static readonly Remington_Reload: PlayerAnimationData = {
     type: "idle",
     actionName: "Remington_Reload",
+    timeScale: 1.7,
     repetitions: 1,
   };
 }

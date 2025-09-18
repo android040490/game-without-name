@@ -19,6 +19,10 @@ import { MeshComponent } from "../components/MeshComponent";
 import { Euler, Quaternion, Vector3 } from "three";
 import { CameraComponent } from "../components/CameraComponent";
 import { WeaponComponent } from "../components/WeaponComponent";
+import {
+  PlayerState,
+  PlayerStateComponent,
+} from "../components/PlayerStateComponent";
 
 export class PlayerControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -199,7 +203,15 @@ export class PlayerControlSystem extends System {
 
   private fire(): void {
     const weapon = this.entity?.getComponent(WeaponComponent);
-    if (!weapon || !weapon.canShoot) {
+    const stateComponent = this.entity?.getComponent(PlayerStateComponent);
+    if (!weapon) {
+      return;
+    }
+
+    if (
+      stateComponent?.currentState === PlayerState.Shoot ||
+      stateComponent?.currentState === PlayerState.Reload
+    ) {
       return;
     }
 

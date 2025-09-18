@@ -33,7 +33,7 @@ export class SystemManager {
     this.eventBus.on(EntityAdded, (event: EntityAdded) => {
       this.handleEntityAdded(event.entity);
     });
-    this.eventBus.on(EntityUpdated, (event: EntityAdded) => {
+    this.eventBus.on(EntityUpdated, (event: EntityUpdated) => {
       this.handleEntityUpdated(event.entity);
     });
     this.eventBus.on(EntityRemoved, (event: EntityRemoved) => {

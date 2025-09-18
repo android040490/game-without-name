@@ -16,6 +16,7 @@ import {
   PlayerState,
   PlayerStateComponent,
 } from "../components/PlayerStateComponent";
+import { Weapon } from "../types/weapon";
 
 export class PlayerFactorySystem extends System {
   private readonly resourcesManager: ResourcesManager;
@@ -90,7 +91,7 @@ export class PlayerFactorySystem extends System {
         },
       }),
       new WeaponComponent({
-        name: "Remington 870",
+        name: Weapon.Remington,
         type: "ranged",
         damage: 2,
         range: 100,
@@ -101,6 +102,9 @@ export class PlayerFactorySystem extends System {
         bulletSpread: 0.07,
         projectileSpeed: 400,
         lastAttackTime: 0,
+        magazineSize: 4,
+        ammoInMagazine: 4,
+        totalAmmo: Infinity,
         muzzleRef: armsHolder.getObjectByName("Muzzle"),
       }),
       new PlayerStateComponent(PlayerState.Idle),

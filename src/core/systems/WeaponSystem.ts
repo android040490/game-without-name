@@ -12,14 +12,18 @@ import { PhysicsComponent } from "../components/PhysicsComponent";
 import { LifetimeComponent } from "../components/LifetimeComponent";
 import { Crosshair } from "../../ui/Crosshair";
 import { PlayerComponent } from "../components/PlayerComponent";
+import { EventBus } from "../event/EventBus";
+import { StateTransition } from "../event/StateTransition";
 
 export class WeaponSystem extends System {
+  private readonly eventBus: EventBus;
   private entityManager: EntityManager;
   private crosshairElement: Crosshair | null;
 
   constructor(game: Game) {
     super(game);
     this.entityManager = game.entityManager;
+    this.eventBus = game.eventBus;
 
     this.crosshairElement = new Crosshair();
     document.body.appendChild(this.crosshairElement);
@@ -29,48 +33,40 @@ export class WeaponSystem extends System {
     return entity.hasComponents(WeaponComponent);
   }
 
-  // update(): void {
-  //   for (const [_, entity] of this.entities) {
-  //     const { object, offset } = entity.getComponent(WeaponAnchorComponent)!;
-  //     const { collider } = entity.getComponent(PhysicsComponent)!;
-  //     const { object: debugMesh } = entity.getComponent(MeshComponent) ?? {};
-
-  //     const weaponWorldPos = new THREE.Vector3();
-  //     object.getWorldPosition(weaponWorldPos);
-
-  //     const weaponWorldQuat = new THREE.Quaternion();
-  //     object.getWorldQuaternion(weaponWorldQuat);
-
-  //     if (offset) {
-  //       const rotatedOffset = offset.clone().applyQuaternion(weaponWorldQuat);
-  //       weaponWorldPos.add(rotatedOffset);
-  //     }
-
-  //     debugMesh?.position.copy(weaponWorldPos);
-  //     debugMesh?.quaternion.copy(weaponWorldQuat);
-
-  //     collider?.setTranslation(weaponWorldPos);
-  //     collider?.setRotation(weaponWorldQuat);
-  //   }
-  // }
   update(): void {
-    const now = performance.now() / 1000;
-
     for (const [_, entity] of this.entities) {
       const weapon = entity.getComponent(WeaponComponent)!;
 
-      weapon.canShoot = !(now - weapon.lastAttackTime < 1 / weapon.fireRate);
-
-      if (!weapon.isShotInitiated) continue;
-
-      weapon.isShotInitiated = false;
-      weapon.lastAttackTime = now;
-
       if (weapon.type === "ranged") {
-        this.spawnProjectiles(entity, weapon);
+        this.handleRangeWeapon(entity, weapon);
       } else if (weapon.type === "melee") {
         // this.performMeleeAttack(e, weapon);
       }
+    }
+  }
+
+  private handleRangeWeapon(entity: Entity, weapon: WeaponComponent): void {
+    if (
+      weapon.isReloadInitiated ||
+      (weapon.isShotInitiated && weapon.isMagazineEmpty)
+    ) {
+      this.reloadWeapon(entity, weapon);
+    } else if (weapon.isShotInitiated && !weapon.isMagazineEmpty) {
+      weapon.ammoInMagazine -= 1;
+      this.spawnProjectiles(entity, weapon);
+    }
+
+    weapon.isReloadInitiated = false;
+    weapon.isShotInitiated = false;
+  }
+
+  private reloadWeapon(entity: Entity, weapon: WeaponComponent): void {
+    if (weapon.totalAmmo) {
+      const needed = weapon.magazineSize - weapon.ammoInMagazine;
+      const toLoad = Math.min(needed, weapon.totalAmmo);
+      weapon.totalAmmo -= toLoad;
+      weapon.ammoInMagazine += toLoad;
+      this.eventBus.emit(new StateTransition(entity, "reload"));
     }
   }
 
@@ -140,5 +136,7 @@ export class WeaponSystem extends System {
 
       this.entityManager.addEntity(bulletEntity);
     }
+
+    this.eventBus.emit(new StateTransition(entity, "shoot"));
   }
 }
