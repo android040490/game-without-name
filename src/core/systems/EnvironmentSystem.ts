@@ -97,9 +97,9 @@ export class EnvironmentSystem extends System {
       );
       const skyOpacity = THREE.MathUtils.smoothstep(sunCosine, -0.5, 0.2);
 
-      const starsOpacity = 1 - skyOpacity;
+      const starsOpacity = (1 - skyOpacity) * 2;
 
-      env.stars.material.uniforms.uOpacity.value = starsOpacity * 2;
+      env.stars.material.uniforms.uOpacity.value = starsOpacity;
 
       env.sunLight.intensity = 4 * sunLightIntensity;
       env.sky.material.uniforms.sunPosition.value = sunPosition;
