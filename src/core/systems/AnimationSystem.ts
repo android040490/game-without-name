@@ -52,20 +52,31 @@ export class AnimationSystem extends System {
       timeScale,
     } = component;
 
-    if (currentActionName && !currentAction) {
+    if (!currentActionName) {
+      return;
+    }
+
+    if (
+      currentActionName === currentAction?.getClip.name &&
+      currentAction?.isRunning()
+    ) {
+      return;
+    }
+
+    if (
+      !currentAction ||
+      (currentActionName === currentAction?.getClip().name &&
+        !currentAction?.isRunning())
+    ) {
       // start first animation
       component.currentAction = animationActions.get(currentActionName);
-      component.currentAction?.play().fadeIn(1);
-    } else if (currentActionName && currentAction) {
+      component.currentAction?.reset().play();
+    } else if (currentActionName !== currentAction?.getClip().name) {
       // transition between animations
       const newAction = animationActions?.get(currentActionName);
       const oldAction = currentAction;
-      newAction?.reset().play().crossFadeFrom(oldAction, 0.2, true);
+      newAction?.reset().crossFadeFrom(oldAction, 0.2, true).play();
       component.currentAction = newAction;
-    } else if (!currentActionName) {
-      // stop animations
-      currentAction?.reset().fadeOut(1);
-      component.currentAction = undefined;
     }
 
     if (component.currentAction) {
@@ -77,12 +88,9 @@ export class AnimationSystem extends System {
 
   update(): void {
     for (const [_, entity] of this.entities) {
-      const { animationMixer, currentAction, currentActionName } =
-        entity.getComponent(AnimationComponent) ?? {};
+      const { animationMixer } = entity.getComponent(AnimationComponent) ?? {};
 
-      if (currentActionName !== currentAction?.getClip().name) {
-        this.play(entity);
-      }
+      this.play(entity);
 
       animationMixer?.update(this.timeManager.timeStep);
     }

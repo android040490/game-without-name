@@ -1,12 +1,12 @@
 import * as THREE from "three";
 import Sky from "../custom-objects/Sky";
+import Stars from "../custom-objects/Stars";
 
 interface EnvironmentConfig {
   sunLightColor?: string;
   ambientLightColor?: string;
   sunLightIntensity?: number;
   ambientLightIntensity?: number;
-  nightMapTexturePath?: string;
   sunPhi?: number;
   sunTheta?: number;
 }
@@ -15,10 +15,9 @@ export class EnvironmentComponent {
   public sunLight: THREE.DirectionalLight;
   public ambientLight: THREE.AmbientLight;
   public sky: Sky;
+  public stars: Stars;
   public sunPhi: number;
   public sunTheta: number;
-  public nightMapTexturePath: string;
-  public texture?: THREE.Texture;
 
   constructor(config?: EnvironmentConfig) {
     const {
@@ -28,7 +27,6 @@ export class EnvironmentComponent {
       sunTheta = Math.PI / 4,
       ambientLightColor = "#ffffff",
       ambientLightIntensity = 0.2,
-      nightMapTexturePath = "textures/stars_milky_way_8k.jpg",
     } = config ?? {};
     this.sunLight = new THREE.DirectionalLight(
       sunLightColor,
@@ -38,8 +36,8 @@ export class EnvironmentComponent {
       ambientLightColor,
       ambientLightIntensity,
     );
-    this.nightMapTexturePath = nightMapTexturePath;
     this.sky = new Sky();
+    this.stars = new Stars();
     this.sunPhi = sunPhi;
     this.sunTheta = sunTheta;
   }

@@ -15,9 +15,9 @@ export class DamageSystem extends System {
   update(): void {
     for (const [_, entity] of this.entities) {
       const healthComponent = entity.getComponent(HealthComponent)!;
-      const { amount } = entity.getComponent(MakeDamageComponent)!;
+      const { damage } = entity.getComponent(MakeDamageComponent)!;
 
-      healthComponent.health -= amount;
+      healthComponent.health -= damage;
 
       if (healthComponent.health <= 0) {
         this.markAsDead(entity);

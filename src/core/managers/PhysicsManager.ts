@@ -79,6 +79,10 @@ interface RigidBodyConfig {
   lockRotation?: boolean;
   lockTranslation?: boolean;
   gravityScale?: number;
+  ccdEnabled?: boolean;
+  linvel?: Vector3;
+  position?: Vector3;
+  rotation?: Quaternion;
 }
 
 export interface PhysicalObjectConfig {
@@ -229,8 +233,16 @@ export class PhysicsManager {
   }
 
   private createRigidBodyDesc(config: RigidBodyConfig): RigidBodyDesc {
-    const { rigidBodyType, lockRotation, gravityScale, lockTranslation } =
-      config;
+    const {
+      rigidBodyType,
+      lockRotation,
+      gravityScale,
+      lockTranslation,
+      ccdEnabled,
+      linvel,
+      position,
+      rotation,
+    } = config;
 
     let bodyDesc: RigidBodyDesc;
 
@@ -263,6 +275,22 @@ export class PhysicsManager {
 
     if (gravityScale) {
       bodyDesc.gravityScale = gravityScale;
+    }
+
+    if (ccdEnabled) {
+      bodyDesc.ccdEnabled = true;
+    }
+
+    if (linvel) {
+      bodyDesc.setLinvel(linvel.x, linvel.y, linvel.z);
+    }
+
+    if (position) {
+      bodyDesc.setTranslation(position.x, position.y, position.z);
+    }
+
+    if (rotation) {
+      bodyDesc.setRotation(rotation);
     }
 
     return bodyDesc;

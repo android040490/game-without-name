@@ -1,10 +1,8 @@
-const { ActiveEvents } = await import("@dimforge/rapier3d");
 import * as THREE from "three";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { MeshComponent } from "../components/MeshComponent";
-import { EntityManager } from "../managers/EntityManager";
 import { ResourcesManager } from "../managers/ResourcesManager";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { GLTF } from "three/examples/jsm/Addons.js";
@@ -13,19 +11,20 @@ import { MeshBuilder } from "../factories/MeshBuilder";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
 import { WeaponComponent } from "../components/WeaponComponent";
 import { InteractionGroups } from "../constants/InteractionGroups";
-import { WeaponAnchorComponent } from "../components/WeaponAnchorComponent";
-// import { MeshConfigComponent } from "../components/MeshConfigComponent";
-import { OwnerComponent } from "../components/OwnerComponent";
+import { CameraComponent } from "../components/CameraComponent";
+import {
+  PlayerState,
+  PlayerStateComponent,
+} from "../components/PlayerStateComponent";
+import { Weapon } from "../types/weapon";
 
 export class PlayerFactorySystem extends System {
-  private readonly entityManager: EntityManager;
   private readonly resourcesManager: ResourcesManager;
   private readonly meshBuilder: MeshBuilder;
 
   constructor(game: Game) {
     super(game);
 
-    this.entityManager = this.game.entityManager;
     this.resourcesManager = this.game.resourcesManager;
     this.meshBuilder = new MeshBuilder();
   }
@@ -44,8 +43,7 @@ export class PlayerFactorySystem extends System {
     const { armsModelPath, height, isBoundingBoxVisible } = entity.getComponent(
       PlayerConfigComponent,
     )!;
-
-    let model: GLTF | undefined;
+    let components: object[] = [];
 
     const radius = height * 0.3;
     const capsuleLength = height - radius * 2;
@@ -55,8 +53,31 @@ export class PlayerFactorySystem extends System {
       capsuleLength,
       isBoundingBoxVisible,
     );
+    const armsHolder = new THREE.Group();
+    armsHolder.name = "ArmsHolder";
+    armsHolder.position.y = height * 0.5 - 0.3;
+    capsule.add(armsHolder);
 
-    let components: object[] = [
+    const model = await this.resourcesManager.loadModel(armsModelPath);
+
+    if (model) {
+      const armsMesh = this.prepareArmsModel(model);
+
+      if (model.animations.length > 0) {
+        components.push(
+          new AnimationComponent(armsMesh, model.animations, "Remington_Idle"),
+        );
+      }
+
+      // this.createWeapon(entity, armsMesh);
+
+      armsMesh.position.y -= 0.3;
+      armsMesh.position.z -= 0.15;
+      armsHolder.add(armsMesh);
+    }
+
+    components.push(
+      new CameraComponent({ cameraHolder: armsHolder }),
       new MeshComponent(capsule),
       new PhysicsComponent({
         colliderConfig: {
@@ -69,70 +90,73 @@ export class PlayerFactorySystem extends System {
           lockRotation: true,
         },
       }),
-    ];
-
-    model = await this.resourcesManager.loadModel(armsModelPath);
-
-    if (model) {
-      const armsMesh = this.prepareArmsModel(model);
-
-      if (model.animations.length > 0) {
-        components.push(
-          new AnimationComponent(armsMesh, model.animations, "Idle"),
-        );
-      }
-
-      this.createWeapon(entity, armsMesh);
-
-      capsule.add(armsMesh);
-    }
+      new WeaponComponent({
+        name: Weapon.Remington,
+        type: "ranged",
+        damage: 2,
+        range: 100,
+        fireRate: 1,
+        bulletCount: 10,
+        bulletSize: 0.02,
+        bulletDensity: 40,
+        bulletSpread: 0.07,
+        projectileSpeed: 400,
+        lastAttackTime: 0,
+        magazineSize: 4,
+        ammoInMagazine: 4,
+        totalAmmo: Infinity,
+        muzzleRef: armsHolder.getObjectByName("Muzzle"),
+      }),
+      new PlayerStateComponent(PlayerState.Idle),
+    );
 
     entity.addComponents(components);
   }
 
-  private createWeapon(player: Entity, armsMesh: THREE.Object3D): void {
-    const swordMesh = armsMesh.getObjectByName("Proto_sword");
+  // Unused logic for legacy arms model with sword
+  // private createWeapon(player: Entity, armsMesh: THREE.Object3D): void {
+  //   const swordMesh = armsMesh.getObjectByName("Proto_sword");
 
-    if (!swordMesh) {
-      console.error("PlayerFactorySystem: arms model doesn't have sword");
-      return;
-    }
+  //   if (!swordMesh) {
+  //     console.error("PlayerFactorySystem: arms model doesn't have sword");
+  //     return;
+  //   }
 
-    const box = new THREE.Box3().setFromObject(swordMesh);
-    const swordSize = box.getSize(new THREE.Vector3());
+  //   const box = new THREE.Box3().setFromObject(swordMesh);
+  //   const swordSize = box.getSize(new THREE.Vector3());
 
-    const weapon = new Entity();
-    weapon.addComponents([
-      new OwnerComponent(player),
-      new WeaponComponent({ damageAmount: 10 }),
-      new WeaponAnchorComponent(swordMesh, new THREE.Vector3(-0.01, 0.5, 0)), // TODO: maybe could be a part of Player entity
-      new PhysicsComponent({
-        colliderConfig: {
-          shape: {
-            type: "box",
-            sizes: { x: 0.05, y: swordSize.y, z: 0.05 },
-          },
-          activeEvents: ActiveEvents.CONTACT_FORCE_EVENTS,
-          collisionGroups: InteractionGroups.PLAYER_WEAPON,
-        },
-      }),
-      // new MeshConfigComponent({
-      //   geometry: {
-      //     type: "box",
-      //     params: [0.05, swordSize.y, 0.05],
-      //   },
-      //   material: {
-      //     type: "basic",
-      //     params: {
-      //       color: 0x00ff00,
-      //       wireframe: true,
-      //     },
-      //   },
-      // }),
-    ]);
+  //   const weapon = new Entity();
+  //   weapon.addComponents([
+  //     new OwnerComponent(player),
+  //     new WeaponComponent({ damageAmount: 10 }),
+  //     new WeaponAnchorComponent(swordMesh, new THREE.Vector3(-0.01, 0.5, 0)), // TODO: maybe could be a part of Player entity
+  //     new PhysicsComponent({
+  //       colliderConfig: {
+  //         shape: {
+  //           type: "box",
+  //           sizes: { x: 0.05, y: swordSize.y, z: 0.05 },
+  //         },
+  //         activeEvents: ActiveEvents.CONTACT_FORCE_EVENTS,
+  //         collisionGroups: InteractionGroups.PLAYER_WEAPON,
+  //       },
+  //     }),
+  //     // new MeshConfigComponent({
+  //     //   geometry: {
+  //     //     type: "box",
+  //     //     params: [0.05, swordSize.y, 0.05],
+  //     //   },
+  //     //   material: {
+  //     //     type: "basic",
+  //     //     params: {
+  //     //       color: 0x00ff00,
+  //     //       wireframe: true,
+  //     //     },
+  //     //   },
+  //     // }),
+  //   ]);
 
-    this.entityManager.addEntity(weapon);
-  }
+  //   this.entityManager.addEntity(weapon);
+  // }
 
   private createCapsule(
     radius: number,
@@ -158,9 +182,12 @@ export class PlayerFactorySystem extends System {
   private prepareArmsModel(model: GLTF): THREE.Object3D {
     const modelMesh = model.scene;
     modelMesh.rotateY(Math.PI);
-    modelMesh.scale.setScalar(0.4);
-    modelMesh.position.y += 0.3;
-    modelMesh.position.z -= 0.4;
+    modelMesh.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.frustumCulled = false;
+      }
+    });
+    modelMesh.position.z += 0.35;
     return modelMesh;
   }
 }

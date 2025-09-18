@@ -1,3 +1,3 @@
-export class MakeDamageComponent {
+export class BulletComponent {
   constructor(public damage: number) {}
 }

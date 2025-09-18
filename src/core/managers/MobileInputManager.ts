@@ -1,5 +1,5 @@
-import { Camera, Euler, Vector3 } from "three";
-import { InputManager } from "../models/InputManager";
+import { Vector3 } from "three";
+import { InputManager, InputManagerConfig } from "../models/InputManager";
 import {
   JoystickMoveEvent,
   LookMoveEvent,
@@ -7,17 +7,16 @@ import {
 } from "../../ui/MobileControl";
 
 export class MobileInputManager extends InputManager {
-  private readonly _euler = new Euler(0, 0, 0, "YXZ");
   private readonly _PI_2 = Math.PI / 2;
-  private readonly maxPolarAngle = 2.3;
-  private camera?: Camera;
 
   private mobileControlElement: MobileControl | null;
-  private movementX = 0;
-  private movementY = 0;
+  private movement = new Vector3(0, 0, 0);
 
-  constructor() {
-    super();
+  public yaw = 0;
+  public pitch = 0;
+
+  constructor(config: InputManagerConfig) {
+    super(config);
 
     document.body.appendChild(document.createElement("mobile-control"));
     this.mobileControlElement = document.querySelector("mobile-control");
@@ -28,8 +27,7 @@ export class MobileInputManager extends InputManager {
     this.dispatchAttackEvent = this.dispatchAttackEvent.bind(this);
   }
 
-  setup(camera: Camera): void {
-    this.camera = camera;
+  setup(): void {
     this.setListeners();
   }
 
@@ -41,7 +39,7 @@ export class MobileInputManager extends InputManager {
   }
 
   get playerLocalMovementDirection(): Vector3 {
-    return new Vector3(this.movementX, 0, this.movementY);
+    return this.movement;
   }
 
   private setListeners() {
@@ -80,23 +78,18 @@ export class MobileInputManager extends InputManager {
   }
 
   private rotateCamera(event: LookMoveEvent): void {
-    if (this.camera) {
-      const { x, y } = event.detail;
-      this._euler.setFromQuaternion(this.camera.quaternion);
-      this._euler.y -= x;
-      this._euler.x -= y;
-      this._euler.x = Math.max(
-        this._PI_2 - this.maxPolarAngle,
-        Math.min(this._PI_2, this._euler.x),
-      );
-      this.camera.quaternion.setFromEuler(this._euler);
-    }
+    const { x, y } = event.detail;
+    this.yaw -= x;
+    this.pitch -= y;
+    this.pitch = Math.max(
+      this._PI_2 - this.maxPolarAngle,
+      Math.min(this._PI_2 - this.minPolarAngle, this.pitch),
+    );
   }
 
   private handleJoystickMovement(event: JoystickMoveEvent): void {
     const { x, y, fullTilt } = event.detail;
-    this.movementX = x;
-    this.movementY = y;
+    this.movement.set(x, 0, y);
 
     this.dispatchEvent({ type: "accelerate", value: !!fullTilt });
   }

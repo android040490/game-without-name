@@ -9,8 +9,9 @@ interface Loaders {
 }
 
 export class ResourcesManager {
-  private readonly loadingManager: THREE.LoadingManager;
-  private readonly loaders: Loaders;
+  static instance: ResourcesManager;
+  private readonly loadingManager!: THREE.LoadingManager;
+  private readonly loaders!: Loaders;
   private readonly eventBus: EventBus = eventBus;
   private readonly textureCache: Map<string, THREE.Texture> = new Map();
   private readonly loadingTextures: Map<
@@ -22,6 +23,12 @@ export class ResourcesManager {
     new Map();
 
   constructor() {
+    if (ResourcesManager.instance) {
+      return ResourcesManager.instance;
+    }
+
+    ResourcesManager.instance = this;
+
     this.loadingManager = new THREE.LoadingManager();
     this.loaders = {
       texture: new THREE.TextureLoader(this.loadingManager),

@@ -42,22 +42,21 @@ export class PhysicsSystem extends System {
 
   addEntity(entity: Entity): void {
     super.addEntity(entity);
-    const component = entity.getComponent(PhysicsComponent);
+    const component = entity.getComponent(PhysicsComponent)!;
+    const { config } = component;
     const { position } = entity.getComponent(PositionComponent) ?? {};
     const { rotation } = entity.getComponent(RotationComponent) ?? {};
-    if (component?.config) {
-      const { collider, rigidBody } = this.physicsManager.createObject(
-        component.config,
-      );
-      component.collider = collider;
-      component.rigidBody = rigidBody;
+
+    if (config.rigidBodyConfig) {
+      config.rigidBodyConfig.position = position;
+      config.rigidBodyConfig.rotation = rotation;
     }
-    if (position) {
-      component?.rigidBody?.setTranslation(position, true);
-    }
-    if (rotation) {
-      component?.rigidBody?.setRotation(rotation, true);
-    }
+
+    const { collider, rigidBody } = this.physicsManager.createObject(
+      component.config,
+    );
+    component.collider = collider;
+    component.rigidBody = rigidBody;
   }
 
   update(): void {

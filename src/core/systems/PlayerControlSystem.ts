@@ -7,29 +7,48 @@ import { TimeManager } from "../managers/TimeManager";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { PlayerControlComponent } from "../components/PlayerControlComponent";
 import { PlayerConfigComponent } from "../components/PlayerConfigComponent";
-import { AnimationComponent } from "../components/AnimationComponent";
-import { PlayerAnimations } from "../constants/PlayerAnimations";
 import { DesktopInputManager } from "../managers/DesktopInputManager";
-import { InputManager, InputManagerEvents } from "../models/InputManager";
-import { CameraComponent } from "../components/CameraComponent";
+import {
+  InputManager,
+  InputManagerConfig,
+  InputManagerEvents,
+} from "../models/InputManager";
 import { MobileInputManager } from "../managers/MobileInputManager";
 import { isMobile } from "../../helpers";
+import { MeshComponent } from "../components/MeshComponent";
+import { Euler, Quaternion, Vector3 } from "three";
+import { CameraComponent } from "../components/CameraComponent";
+import { WeaponComponent } from "../components/WeaponComponent";
+import {
+  PlayerState,
+  PlayerStateComponent,
+} from "../components/PlayerStateComponent";
+import { EventBus } from "../event/EventBus";
+import { StateTransition } from "../event/StateTransition";
 
 export class PlayerControlSystem extends System {
+  private readonly eventBus: EventBus;
   private readonly timeManager: TimeManager;
   private readonly physicsManager: PhysicsManager;
   private inputManager: InputManager;
-  private onGround: boolean = false;
   private entity?: Entity;
+  private _quaternion = new Quaternion();
+  private _euler = new Euler(0, 0, 0, "YXZ");
 
   constructor(game: Game) {
     super(game);
 
     this.timeManager = game.timeManager;
     this.physicsManager = game.physicsManager;
+    this.eventBus = game.eventBus;
+
+    const inputManagerConfig: InputManagerConfig = {
+      minPolarAngle: 0,
+      maxPolarAngle: 2.8,
+    };
     this.inputManager = isMobile()
-      ? new MobileInputManager()
-      : new DesktopInputManager(game);
+      ? new MobileInputManager(inputManagerConfig)
+      : new DesktopInputManager(inputManagerConfig);
 
     this.attack = this.attack.bind(this);
     this.jump = this.jump.bind(this);
@@ -41,7 +60,6 @@ export class PlayerControlSystem extends System {
       PlayerControlComponent,
       PlayerConfigComponent,
       PhysicsComponent,
-      CameraComponent,
     );
   }
 
@@ -56,8 +74,7 @@ export class PlayerControlSystem extends System {
     super.addEntity(entity);
     this.entity = entity;
 
-    const cameraComponent = entity.getComponent(CameraComponent)!;
-    this.inputManager.setup(cameraComponent.camera);
+    this.inputManager.setup();
 
     this.inputManager.addEventListener("attack", this.attack);
     this.inputManager.addEventListener("jump", this.jump);
@@ -82,24 +99,32 @@ export class PlayerControlSystem extends System {
     const playerControlComponent = this.entity.getComponent(
       PlayerControlComponent,
     )!;
-    const { camera } = this.entity.getComponent(CameraComponent)!;
+    const armsHolder = this.entity
+      .getComponent(MeshComponent)
+      ?.object.getObjectByName("ArmsHolder");
 
-    if (!collider || !rigidBody) {
+    if (!collider || !rigidBody || !rigidBody.isValid()) {
       return;
     }
 
-    this.onGround = this.detectGround(rigidBody, collider, height);
+    const onGround = this.detectGround(rigidBody, collider, height);
+    playerControlComponent.onGround = onGround;
 
-    this.computeNextVelocity(playerControlComponent, rigidBody, this.onGround);
+    this.computeNextVelocity(playerControlComponent, rigidBody, onGround);
 
-    const { y, w } = camera.quaternion;
-    rigidBody?.setRotation({ x: 0, y, z: 0, w }, true);
+    const pitch = this.inputManager.pitch;
+    const yaw = this.inputManager.yaw;
+    this._euler.set(pitch, yaw, 0);
+    const rotation = this._quaternion.setFromEuler(this._euler);
+    rigidBody?.setRotation({ x: 0, y: rotation.y, z: 0, w: rotation.w }, true);
+    armsHolder?.rotation.set(pitch, 0, 0);
   }
 
   private jump(): void {
     const { rigidBody } = this.entity?.getComponent(PhysicsComponent) ?? {};
+    const { onGround } = this.entity?.getComponent(PlayerControlComponent)!;
 
-    if (!rigidBody || !this.onGround) {
+    if (!rigidBody || !onGround) {
       return;
     }
 
@@ -174,23 +199,42 @@ export class PlayerControlSystem extends System {
       result.y = rigidBody.linvel().y; // Preserve vertical velocity
       rigidBody.setLinvel(result, true);
     }
+
+    const currentSpeed = velocity.length();
+    if (onTheGround && currentSpeed > 4) {
+      this.eventBus.emit(new StateTransition(this.entity!, "run"));
+    } else if (onTheGround && currentSpeed > 1) {
+      this.eventBus.emit(new StateTransition(this.entity!, "move"));
+    } else {
+      this.eventBus.emit(new StateTransition(this.entity!, "stop"));
+    }
   }
 
   private attack(): void {
-    const animationComponent = this.entity?.getComponent(AnimationComponent);
-    if (!animationComponent) {
+    this.fire();
+  }
+
+  private fire(): void {
+    const weapon = this.entity?.getComponent(WeaponComponent);
+    const stateComponent = this.entity?.getComponent(PlayerStateComponent);
+    if (!weapon) {
       return;
     }
 
-    const randomAttackAnimation =
-      PlayerAnimations.ATTACKS[
-        Math.floor(Math.random() * PlayerAnimations.ATTACKS.length)
-      ];
+    if (
+      stateComponent?.currentState === PlayerState.Shoot ||
+      stateComponent?.currentState === PlayerState.Reload
+    ) {
+      return;
+    }
 
-    animationComponent.animation = randomAttackAnimation;
-    animationComponent.completeHandler = () => {
-      animationComponent.animation = PlayerAnimations.Idle;
-    };
+    const direction = new Vector3();
+    this.entity
+      ?.getComponent(CameraComponent)
+      ?.camera.getWorldDirection(direction);
+
+    weapon.isShotInitiated = true;
+    weapon.direction = direction;
   }
 
   private accelerate(event: InputManagerEvents["accelerate"]): void {
