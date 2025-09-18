@@ -23,8 +23,11 @@ import {
   PlayerState,
   PlayerStateComponent,
 } from "../components/PlayerStateComponent";
+import { EventBus } from "../event/EventBus";
+import { StateTransition } from "../event/StateTransition";
 
 export class PlayerControlSystem extends System {
+  private readonly eventBus: EventBus;
   private readonly timeManager: TimeManager;
   private readonly physicsManager: PhysicsManager;
   private inputManager: InputManager;
@@ -37,6 +40,7 @@ export class PlayerControlSystem extends System {
 
     this.timeManager = game.timeManager;
     this.physicsManager = game.physicsManager;
+    this.eventBus = game.eventBus;
 
     const inputManagerConfig: InputManagerConfig = {
       minPolarAngle: 0,
@@ -194,6 +198,15 @@ export class PlayerControlSystem extends System {
       const result = velocity.clone().applyQuaternion(currentRotation);
       result.y = rigidBody.linvel().y; // Preserve vertical velocity
       rigidBody.setLinvel(result, true);
+    }
+
+    const currentSpeed = velocity.length();
+    if (onTheGround && currentSpeed > 4) {
+      this.eventBus.emit(new StateTransition(this.entity!, "run"));
+    } else if (onTheGround && currentSpeed > 1) {
+      this.eventBus.emit(new StateTransition(this.entity!, "move"));
+    } else {
+      this.eventBus.emit(new StateTransition(this.entity!, "stop"));
     }
   }
 
