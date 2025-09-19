@@ -13,7 +13,8 @@ import { LifetimeComponent } from "../components/LifetimeComponent";
 import { Crosshair } from "../../ui/Crosshair";
 import { PlayerComponent } from "../components/PlayerComponent";
 import { EventBus } from "../event/EventBus";
-import { StateTransition } from "../event/StateTransition";
+import { WeaponReload } from "../event/WeaponReload";
+import { WeaponShot } from "../event/WeaponShot";
 
 export class WeaponSystem extends System {
   private readonly eventBus: EventBus;
@@ -66,7 +67,7 @@ export class WeaponSystem extends System {
       const toLoad = Math.min(needed, weapon.totalAmmo);
       weapon.totalAmmo -= toLoad;
       weapon.ammoInMagazine += toLoad;
-      this.eventBus.emit(new StateTransition(entity, "reload"));
+      this.eventBus.emit(new WeaponReload(entity));
     }
   }
 
@@ -137,6 +138,6 @@ export class WeaponSystem extends System {
       this.entityManager.addEntity(bulletEntity);
     }
 
-    this.eventBus.emit(new StateTransition(entity, "shoot"));
+    this.eventBus.emit(new WeaponShot(entity));
   }
 }

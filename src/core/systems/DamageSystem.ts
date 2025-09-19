@@ -1,13 +1,21 @@
-const { RigidBodyType } = await import("@dimforge/rapier3d");
-import { DamagedMarkerComponent } from "../components/DamagedMarkerComponent";
-import { DeadMarkerComponent } from "../components/DeadMarkerComponent";
 import { HealthComponent } from "../components/HealthComponent";
 import { MakeDamageComponent } from "../components/MakeDamageComponent";
-import { PhysicsComponent } from "../components/PhysicsComponent";
+import { Dead } from "../event/Dead";
+import { EventBus } from "../event/EventBus";
+import { GotDamaged } from "../event/GotDamaged";
+import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 
 export class DamageSystem extends System {
+  private readonly eventBus: EventBus;
+
+  constructor(game: Game) {
+    super(game);
+
+    this.eventBus = game.eventBus;
+  }
+
   appliesTo(entity: Entity): boolean {
     return entity.hasComponents(HealthComponent, MakeDamageComponent);
   }
@@ -19,21 +27,13 @@ export class DamageSystem extends System {
 
       healthComponent.health -= damage;
 
-      if (healthComponent.health <= 0) {
-        this.markAsDead(entity);
-      }
-
-      entity.addComponent(new DamagedMarkerComponent());
       entity.removeComponent(MakeDamageComponent);
+
+      if (healthComponent.health <= 0) {
+        this.eventBus.emit(new Dead(entity));
+      } else {
+        this.eventBus.emit(new GotDamaged(entity));
+      }
     }
-  }
-
-  private markAsDead(entity: Entity) {
-    const { rigidBody, collider } = entity.getComponent(PhysicsComponent) ?? {};
-
-    rigidBody?.setBodyType(RigidBodyType.KinematicPositionBased, true);
-    collider?.setSensor(true);
-
-    entity.addComponent(new DeadMarkerComponent());
   }
 }

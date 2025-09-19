@@ -4,6 +4,7 @@ import { MeshComponent } from "../components/MeshComponent";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 
+// TODO: think about optimization (ProgressBar object pool, consider move this functionality to DamageSystem, etc.)
 export class EnergyBarSystem extends System {
   appliesTo(entity: Entity): boolean {
     return entity.hasComponents(EnergyBarComponent, HealthComponent);

@@ -3,8 +3,8 @@ import { PlayerComponent } from "../components/PlayerComponent";
 import { PlayerStateComponent } from "../components/PlayerStateComponent";
 import { WeaponComponent } from "../components/WeaponComponent";
 import { PlayerStateToAnimationMap } from "../constants/PlayerStateToAnimationMap";
+import { AnimationFinished } from "../event/AnimationFinished";
 import { EventBus } from "../event/EventBus";
-import { StateTransition } from "../event/StateTransition";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
@@ -42,7 +42,7 @@ export class PlayerAnimationSystem extends System {
     const animationComponent = this.entity.getComponent(AnimationComponent)!;
 
     animationComponent.completeHandler = () => {
-      this.eventBus.emit(new StateTransition(entity, "finished"));
+      this.eventBus.emit(new AnimationFinished(entity));
     };
   }
 

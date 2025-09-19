@@ -1,5 +1,3 @@
-import { StateTransitionEvent } from "../systems/PlayerStateMachineSystem";
-
 export enum PlayerState {
   Idle = "Idle",
   Walk = "Walk",
@@ -8,11 +6,19 @@ export enum PlayerState {
   Reload = "Reload",
 }
 
-// TODO: consider to make this component reusable for NPC
+export enum PlayerTransitionEvent {
+  Shoot = "shoot",
+  Reload = "reload",
+  Stop = "stop",
+  Move = "move",
+  Run = "run",
+  Finished = "finished",
+}
+
 export class PlayerStateComponent {
   public transitions: Record<
     PlayerState,
-    Partial<Record<StateTransitionEvent, PlayerState>>
+    Partial<Record<PlayerTransitionEvent, PlayerState>>
   > = {
     [PlayerState.Idle]: {
       shoot: PlayerState.Shoot,
@@ -21,7 +27,7 @@ export class PlayerStateComponent {
       run: PlayerState.Run,
     },
     [PlayerState.Shoot]: {
-      finished: PlayerState.Idle,
+      [PlayerTransitionEvent.Finished]: PlayerState.Idle,
     },
     [PlayerState.Reload]: {
       finished: PlayerState.Idle,
