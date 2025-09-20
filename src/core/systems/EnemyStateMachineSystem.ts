@@ -21,15 +21,16 @@ export class EnemyStateMachineSystem extends System {
 
     this.eventBus = game.eventBus;
 
-    this.handleAnimationFinished = this.handleAnimationFinished.bind(this);
-    this.handleTransitionEvent = this.handleTransitionEvent.bind(this);
-    this.handleGotDamageEvent = this.handleGotDamageEvent.bind(this);
-    this.handleDeadEvent = this.handleDeadEvent.bind(this);
-
-    this.eventBus.on(AnimationFinished, this.handleAnimationFinished);
-    this.eventBus.on(EnemyStateTransition, this.handleTransitionEvent);
-    this.eventBus.on(GotDamaged, this.handleGotDamageEvent);
-    this.eventBus.on(Dead, this.handleDeadEvent);
+    this.eventBus.on(
+      AnimationFinished,
+      this.handleAnimationFinished.bind(this),
+    );
+    this.eventBus.on(
+      EnemyStateTransition,
+      this.handleTransitionEvent.bind(this),
+    );
+    this.eventBus.on(GotDamaged, this.handleGotDamageEvent.bind(this));
+    this.eventBus.on(Dead, this.handleDeadEvent.bind(this));
   }
 
   appliesTo(entity: Entity): boolean {
@@ -39,9 +40,6 @@ export class EnemyStateMachineSystem extends System {
   private transition(entity: Entity, event: EnemyTransitionEvent) {
     const stateComponent = entity.getComponent(EnemyStateComponent);
     if (!stateComponent) {
-      console.log(
-        "EnemyStateMachineSystem.transition: this entity doesn't have EnemyStateComponent",
-      );
       return;
     }
 

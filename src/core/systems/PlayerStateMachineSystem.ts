@@ -17,15 +17,16 @@ export class PlayerStateMachineSystem extends System {
 
     this.eventBus = game.eventBus;
 
-    this.handleAnimationFinished = this.handleAnimationFinished.bind(this);
-    this.handleTransitionEvent = this.handleTransitionEvent.bind(this);
-    this.handleWeaponReload = this.handleWeaponReload.bind(this);
-    this.handleWeaponShot = this.handleWeaponShot.bind(this);
-
-    this.eventBus.on(AnimationFinished, this.handleAnimationFinished);
-    this.eventBus.on(PlayerStateTransition, this.handleTransitionEvent);
-    this.eventBus.on(WeaponShot, this.handleWeaponShot);
-    this.eventBus.on(WeaponReload, this.handleWeaponReload);
+    this.eventBus.on(
+      AnimationFinished,
+      this.handleAnimationFinished.bind(this),
+    );
+    this.eventBus.on(
+      PlayerStateTransition,
+      this.handleTransitionEvent.bind(this),
+    );
+    this.eventBus.on(WeaponShot, this.handleWeaponShot.bind(this));
+    this.eventBus.on(WeaponReload, this.handleWeaponReload.bind(this));
   }
 
   appliesTo(entity: Entity): boolean {
@@ -46,7 +47,7 @@ export class PlayerStateMachineSystem extends System {
   private transition(entity: Entity, event: PlayerTransitionEvent) {
     const stateComponent = entity.getComponent(PlayerStateComponent);
     if (!stateComponent) {
-      console.log(
+      console.debug(
         "PlayerStateMachineSystem.transition: this entity doesn't have PlayerStateComponent",
       );
       return;
