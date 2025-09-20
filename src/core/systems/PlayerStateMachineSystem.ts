@@ -1,17 +1,13 @@
 import { PlayerStateComponent } from "../components/PlayerStateComponent";
 import { EventBus } from "../event/EventBus";
-import { StateTransition } from "../event/StateTransition";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
-
-export type StateTransitionEvent =
-  | "shoot"
-  | "reload"
-  | "stop"
-  | "move"
-  | "run"
-  | "finished";
+import { PlayerTransitionEvent } from "../components/PlayerStateComponent";
+import { AnimationFinished } from "../event/AnimationFinished";
+import { PlayerStateTransition } from "../event/PlayerStateTransition";
+import { WeaponShot } from "../event/WeaponShot";
+import { WeaponReload } from "../event/WeaponReload";
 
 export class PlayerStateMachineSystem extends System {
   private readonly eventBus: EventBus;
@@ -21,9 +17,16 @@ export class PlayerStateMachineSystem extends System {
 
     this.eventBus = game.eventBus;
 
-    this.handleTransitionEvent = this.handleTransitionEvent.bind(this);
-
-    this.eventBus.on(StateTransition, this.handleTransitionEvent);
+    this.eventBus.on(
+      AnimationFinished,
+      this.handleAnimationFinished.bind(this),
+    );
+    this.eventBus.on(
+      PlayerStateTransition,
+      this.handleTransitionEvent.bind(this),
+    );
+    this.eventBus.on(WeaponShot, this.handleWeaponShot.bind(this));
+    this.eventBus.on(WeaponReload, this.handleWeaponReload.bind(this));
   }
 
   appliesTo(entity: Entity): boolean {
@@ -41,10 +44,10 @@ export class PlayerStateMachineSystem extends System {
     super.addEntity(entity);
   }
 
-  private transition(entity: Entity, event: StateTransitionEvent) {
+  private transition(entity: Entity, event: PlayerTransitionEvent) {
     const stateComponent = entity.getComponent(PlayerStateComponent);
     if (!stateComponent) {
-      console.log(
+      console.debug(
         "PlayerStateMachineSystem.transition: this entity doesn't have PlayerStateComponent",
       );
       return;
@@ -57,7 +60,19 @@ export class PlayerStateMachineSystem extends System {
     }
   }
 
-  private handleTransitionEvent(event: StateTransition) {
+  private handleAnimationFinished(event: AnimationFinished) {
+    this.transition(event.entity, PlayerTransitionEvent.Finished);
+  }
+
+  private handleWeaponReload(event: WeaponShot) {
+    this.transition(event.entity, PlayerTransitionEvent.Reload);
+  }
+
+  private handleWeaponShot(event: WeaponShot) {
+    this.transition(event.entity, PlayerTransitionEvent.Shoot);
+  }
+
+  private handleTransitionEvent(event: PlayerStateTransition) {
     const { entity, transitionEvent } = event;
     this.transition(entity, transitionEvent);
   }

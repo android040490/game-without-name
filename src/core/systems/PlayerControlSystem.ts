@@ -24,7 +24,8 @@ import {
   PlayerStateComponent,
 } from "../components/PlayerStateComponent";
 import { EventBus } from "../event/EventBus";
-import { StateTransition } from "../event/StateTransition";
+import { PlayerStateTransition } from "../event/PlayerStateTransition";
+import { PlayerTransitionEvent } from "../components/PlayerStateComponent";
 
 export class PlayerControlSystem extends System {
   private readonly eventBus: EventBus;
@@ -202,11 +203,17 @@ export class PlayerControlSystem extends System {
 
     const currentSpeed = velocity.length();
     if (onTheGround && currentSpeed > 4) {
-      this.eventBus.emit(new StateTransition(this.entity!, "run"));
+      this.eventBus.emit(
+        new PlayerStateTransition(this.entity!, PlayerTransitionEvent.Run),
+      );
     } else if (onTheGround && currentSpeed > 1) {
-      this.eventBus.emit(new StateTransition(this.entity!, "move"));
+      this.eventBus.emit(
+        new PlayerStateTransition(this.entity!, PlayerTransitionEvent.Move),
+      );
     } else {
-      this.eventBus.emit(new StateTransition(this.entity!, "stop"));
+      this.eventBus.emit(
+        new PlayerStateTransition(this.entity!, PlayerTransitionEvent.Stop),
+      );
     }
   }
 
