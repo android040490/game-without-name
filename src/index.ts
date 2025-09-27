@@ -11,6 +11,7 @@ import { PlayerComponent } from "./core/components/PlayerComponent";
 import { PlayerControlComponent } from "./core/components/PlayerControlComponent";
 import { PlayerConfigComponent } from "./core/components/PlayerConfigComponent";
 import { InteractionGroups } from "./core/constants/InteractionGroups";
+import { PreloadSounds } from "./core/constants/Sounds";
 
 const game = new Game(
   document.querySelector("canvas.webgl") as HTMLCanvasElement,
@@ -74,5 +75,6 @@ createEnvironment();
 createMesh();
 createPlayer();
 await game.levelManager.loadLevel("demo");
+await game.resourcesManager.loadAudios(PreloadSounds);
 
 game.start();

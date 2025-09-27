@@ -1,6 +1,7 @@
 import { Object3D, Vector3 } from "three";
 import { MuzzleFlash } from "../custom-objects/MuzzleFlash";
 import { Weapon } from "../types/weapon";
+import { SoundAsset } from "../constants/Sounds";
 
 interface WeaponConfig {
   name: Weapon;
@@ -18,6 +19,8 @@ interface WeaponConfig {
   magazineSize: number;
   totalAmmo: number;
   muzzleRef?: Object3D;
+  reloadSound: SoundAsset;
+  shotSound: SoundAsset;
 }
 
 export class WeaponComponent {
@@ -39,6 +42,8 @@ export class WeaponComponent {
   public ammoInMagazine: number;
   public isReloadInitiated: boolean = false;
   public muzzleFlash?: MuzzleFlash;
+  public reloadSound: SoundAsset;
+  public shotSound: SoundAsset;
 
   constructor({
     name,
@@ -52,6 +57,8 @@ export class WeaponComponent {
     ammoInMagazine,
     totalAmmo,
     magazineSize,
+    reloadSound,
+    shotSound,
     bulletSpread = 0,
     bulletCount = 1,
     projectileSpeed = 0,
@@ -71,6 +78,8 @@ export class WeaponComponent {
     this.ammoInMagazine = ammoInMagazine;
     this.totalAmmo = totalAmmo;
     this.magazineSize = magazineSize;
+    this.reloadSound = reloadSound;
+    this.shotSound = shotSound;
     if (muzzleRef) {
       this.muzzleFlash = new MuzzleFlash({ muzzleRef });
     }

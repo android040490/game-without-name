@@ -19,6 +19,7 @@ export class EnemyAnimations {
   static readonly Walk: EnemyAnimationData = {
     actionName: "walk",
     type: "movement",
+    timeScale: 1.5,
   };
   static readonly Run: EnemyAnimationData = {
     actionName: "run",

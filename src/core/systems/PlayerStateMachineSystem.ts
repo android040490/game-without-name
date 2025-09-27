@@ -1,13 +1,19 @@
-import { PlayerStateComponent } from "../components/PlayerStateComponent";
+import {
+  PlayerMovementState,
+  PlayerStateComponent,
+} from "../components/PlayerStateComponent";
 import { EventBus } from "../event/EventBus";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { PlayerTransitionEvent } from "../components/PlayerStateComponent";
 import { AnimationFinished } from "../event/AnimationFinished";
-import { PlayerStateTransition } from "../event/PlayerStateTransition";
+import { PlayerMovementStateTransition } from "../event/PlayerMovementStateTransition";
 import { WeaponShot } from "../event/WeaponShot";
 import { WeaponReload } from "../event/WeaponReload";
+import { StopSound } from "../event/StopSound";
+import { PlaySound } from "../event/PlaySound";
+import { SoundAsset } from "../constants/Sounds";
 
 export class PlayerStateMachineSystem extends System {
   private readonly eventBus: EventBus;
@@ -22,8 +28,8 @@ export class PlayerStateMachineSystem extends System {
       this.handleAnimationFinished.bind(this),
     );
     this.eventBus.on(
-      PlayerStateTransition,
-      this.handleTransitionEvent.bind(this),
+      PlayerMovementStateTransition,
+      this.handleMovementTransitionEvent.bind(this),
     );
     this.eventBus.on(WeaponShot, this.handleWeaponShot.bind(this));
     this.eventBus.on(WeaponReload, this.handleWeaponReload.bind(this));
@@ -44,36 +50,69 @@ export class PlayerStateMachineSystem extends System {
     super.addEntity(entity);
   }
 
-  private transition(entity: Entity, event: PlayerTransitionEvent) {
-    const stateComponent = entity.getComponent(PlayerStateComponent);
-    if (!stateComponent) {
+  private transitionMovement(entity: Entity, event: PlayerTransitionEvent) {
+    const state = entity.getComponent(PlayerStateComponent);
+    if (!state) {
       console.debug(
-        "PlayerStateMachineSystem.transition: this entity doesn't have PlayerStateComponent",
+        "PlayerStateMachineSystem.transitionMovement: this entity doesn't have PlayerStateComponent",
       );
       return;
     }
 
-    const next =
-      stateComponent.transitions[stateComponent.currentState]?.[event];
-    if (next !== undefined && next !== stateComponent.currentState) {
-      stateComponent.currentState = next;
+    const next = state.movementTransitions[state.movementState]?.[event];
+    if (next !== undefined && next !== state.movementState) {
+      state.movementState = next;
+
+      if (
+        next === PlayerMovementState.Airborne ||
+        next === PlayerMovementState.Idle
+      ) {
+        this.eventBus.emit(new StopSound(entity, SoundAsset.PlayerRunGravel));
+        this.eventBus.emit(new StopSound(entity, SoundAsset.PlayerWalkGravel));
+      }
+      if (next === PlayerMovementState.Run) {
+        this.eventBus.emit(new StopSound(entity, SoundAsset.PlayerWalkGravel));
+        this.eventBus.emit(
+          new PlaySound(entity, SoundAsset.PlayerRunGravel, true),
+        );
+      } else if (next === PlayerMovementState.Walk) {
+        this.eventBus.emit(new StopSound(entity, SoundAsset.PlayerRunGravel));
+        this.eventBus.emit(
+          new PlaySound(entity, SoundAsset.PlayerWalkGravel, true),
+        );
+      }
+    }
+  }
+
+  private transitionAction(entity: Entity, event: PlayerTransitionEvent) {
+    const state = entity.getComponent(PlayerStateComponent);
+    if (!state) {
+      console.debug(
+        "PlayerStateMachineSystem.transitionAction: this entity doesn't have PlayerStateComponent",
+      );
+      return;
+    }
+
+    const next = state.actionTransitions[state.actionState]?.[event];
+    if (next !== undefined && next !== state.actionState) {
+      state.actionState = next;
     }
   }
 
   private handleAnimationFinished(event: AnimationFinished) {
-    this.transition(event.entity, PlayerTransitionEvent.Finished);
+    this.transitionAction(event.entity, PlayerTransitionEvent.Finished);
   }
 
   private handleWeaponReload(event: WeaponShot) {
-    this.transition(event.entity, PlayerTransitionEvent.Reload);
+    this.transitionAction(event.entity, PlayerTransitionEvent.Reload);
   }
 
   private handleWeaponShot(event: WeaponShot) {
-    this.transition(event.entity, PlayerTransitionEvent.Shoot);
+    this.transitionAction(event.entity, PlayerTransitionEvent.Shoot);
   }
 
-  private handleTransitionEvent(event: PlayerStateTransition) {
+  private handleMovementTransitionEvent(event: PlayerMovementStateTransition) {
     const { entity, transitionEvent } = event;
-    this.transition(entity, transitionEvent);
+    this.transitionMovement(entity, transitionEvent);
   }
 }

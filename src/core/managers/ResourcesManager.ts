@@ -2,10 +2,12 @@ import * as THREE from "three";
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import eventBus, { EventBus } from "../event/EventBus";
 import { ResourcesLoading, ResourcesReady } from "../event/Resource";
+import { SoundAsset } from "../constants/Sounds";
 
 interface Loaders {
-  texture: THREE.TextureLoader;
+  textureLoader: THREE.TextureLoader;
   gltfLoader: GLTFLoader;
+  audioLoader: THREE.AudioLoader;
 }
 
 export class ResourcesManager {
@@ -21,6 +23,11 @@ export class ResourcesManager {
   private readonly modelCache: Map<string, GLTF> = new Map();
   private readonly loadingModels: Map<string, Promise<GLTF | undefined>> =
     new Map();
+  private readonly audioCache: Map<SoundAsset, AudioBuffer> = new Map();
+  private readonly loadingAudios: Map<
+    SoundAsset,
+    Promise<AudioBuffer | undefined>
+  > = new Map();
 
   constructor() {
     if (ResourcesManager.instance) {
@@ -31,8 +38,9 @@ export class ResourcesManager {
 
     this.loadingManager = new THREE.LoadingManager();
     this.loaders = {
-      texture: new THREE.TextureLoader(this.loadingManager),
+      textureLoader: new THREE.TextureLoader(this.loadingManager),
       gltfLoader: new GLTFLoader(this.loadingManager),
+      audioLoader: new THREE.AudioLoader(this.loadingManager),
     };
 
     this.listenLoadingEvents();
@@ -52,7 +60,7 @@ export class ResourcesManager {
     }
 
     const texturePromise = new Promise<THREE.Texture | undefined>((resolve) => {
-      this.loaders.texture.load(
+      this.loaders.textureLoader.load(
         path,
         (texture) => {
           this.textureCache.set(path, texture);
@@ -106,6 +114,50 @@ export class ResourcesManager {
 
     this.loadingModels.set(path, modelPromise);
     return modelPromise;
+  }
+
+  async loadAudio(path: SoundAsset): Promise<AudioBuffer | undefined> {
+    if (this.audioCache.has(path)) {
+      const audio = this.audioCache.get(path);
+      return audio;
+    }
+
+    if (this.loadingAudios.has(path)) {
+      return this.loadingAudios.get(path)!;
+    }
+
+    const audioPromise = new Promise<AudioBuffer | undefined>((resolve) => {
+      this.loaders.audioLoader.load(
+        path,
+        (file) => {
+          this.audioCache.set(path, file);
+          this.loadingAudios.delete(path);
+          resolve(file);
+        },
+        (_: ProgressEvent) => {},
+        (error) => {
+          console.error("Load Audio error:", error);
+          this.loadingAudios.delete(path);
+          resolve(undefined);
+        },
+      );
+    });
+
+    this.loadingAudios.set(path, audioPromise);
+    return audioPromise;
+  }
+
+  loadAudios(paths: SoundAsset[]): Promise<Array<AudioBuffer | undefined>> {
+    return Promise.all(paths.map((path) => this.loadAudio(path)));
+  }
+
+  getAudio(path: SoundAsset): AudioBuffer | undefined {
+    const audio = this.audioCache.get(path);
+    if (!audio) {
+      console.log(`Audio not found in cache, start loading: ${path}`);
+      this.loadAudio(path);
+    }
+    return audio;
   }
 
   private listenLoadingEvents(): void {
