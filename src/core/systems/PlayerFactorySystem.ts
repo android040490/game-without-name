@@ -13,10 +13,12 @@ import { WeaponComponent } from "../components/WeaponComponent";
 import { InteractionGroups } from "../constants/InteractionGroups";
 import { CameraComponent } from "../components/CameraComponent";
 import {
-  PlayerState,
+  PlayerActionState,
+  PlayerMovementState,
   PlayerStateComponent,
 } from "../components/PlayerStateComponent";
 import { Weapon } from "../types/weapon";
+import { SoundAsset } from "../constants/Sounds";
 
 export class PlayerFactorySystem extends System {
   private readonly resourcesManager: ResourcesManager;
@@ -106,8 +108,13 @@ export class PlayerFactorySystem extends System {
         ammoInMagazine: 4,
         totalAmmo: Infinity,
         muzzleRef: armsHolder.getObjectByName("Muzzle"),
+        shotSound: SoundAsset.RemingtonShot,
+        reloadSound: SoundAsset.RemingtonReload,
       }),
-      new PlayerStateComponent(PlayerState.Idle),
+      new PlayerStateComponent(
+        PlayerMovementState.Idle,
+        PlayerActionState.None,
+      ),
     );
 
     entity.addComponents(components);

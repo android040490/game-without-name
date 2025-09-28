@@ -1,7 +1,12 @@
-export enum PlayerState {
+export enum PlayerMovementState {
   Idle = "Idle",
   Walk = "Walk",
   Run = "Run",
+  Airborne = "Airborne",
+}
+
+export enum PlayerActionState {
+  None = "None",
   Shoot = "Shoot",
   Reload = "Reload",
 }
@@ -13,38 +18,53 @@ export enum PlayerTransitionEvent {
   Move = "move",
   Run = "run",
   Finished = "finished",
+  InAir = "inAir",
+  Land = "land",
 }
 
 export class PlayerStateComponent {
-  public transitions: Record<
-    PlayerState,
-    Partial<Record<PlayerTransitionEvent, PlayerState>>
+  public movementTransitions: Record<
+    PlayerMovementState,
+    Partial<Record<PlayerTransitionEvent, PlayerMovementState>>
   > = {
-    [PlayerState.Idle]: {
-      shoot: PlayerState.Shoot,
-      reload: PlayerState.Reload,
-      move: PlayerState.Walk,
-      run: PlayerState.Run,
+    [PlayerMovementState.Idle]: {
+      move: PlayerMovementState.Walk,
+      run: PlayerMovementState.Run,
+      inAir: PlayerMovementState.Airborne,
     },
-    [PlayerState.Shoot]: {
-      [PlayerTransitionEvent.Finished]: PlayerState.Idle,
+    [PlayerMovementState.Walk]: {
+      stop: PlayerMovementState.Idle,
+      run: PlayerMovementState.Run,
+      inAir: PlayerMovementState.Airborne,
     },
-    [PlayerState.Reload]: {
-      finished: PlayerState.Idle,
+    [PlayerMovementState.Run]: {
+      stop: PlayerMovementState.Idle,
+      move: PlayerMovementState.Walk,
+      inAir: PlayerMovementState.Airborne,
     },
-    [PlayerState.Walk]: {
-      stop: PlayerState.Idle,
-      reload: PlayerState.Reload,
-      run: PlayerState.Run,
-      shoot: PlayerState.Shoot,
-    },
-    [PlayerState.Run]: {
-      stop: PlayerState.Idle,
-      reload: PlayerState.Reload,
-      move: PlayerState.Walk,
-      shoot: PlayerState.Shoot,
+    [PlayerMovementState.Airborne]: {
+      land: PlayerMovementState.Idle,
     },
   };
 
-  constructor(public currentState: PlayerState) {}
+  public actionTransitions: Record<
+    PlayerActionState,
+    Partial<Record<PlayerTransitionEvent, PlayerActionState>>
+  > = {
+    [PlayerActionState.None]: {
+      shoot: PlayerActionState.Shoot,
+      reload: PlayerActionState.Reload,
+    },
+    [PlayerActionState.Shoot]: {
+      [PlayerTransitionEvent.Finished]: PlayerActionState.None,
+    },
+    [PlayerActionState.Reload]: {
+      finished: PlayerActionState.None,
+    },
+  };
+
+  constructor(
+    public movementState: PlayerMovementState,
+    public actionState: PlayerActionState,
+  ) {}
 }

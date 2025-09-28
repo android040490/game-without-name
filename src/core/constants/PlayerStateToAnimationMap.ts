@@ -1,4 +1,7 @@
-import { PlayerState } from "../components/PlayerStateComponent";
+import {
+  PlayerActionState,
+  PlayerMovementState,
+} from "../components/PlayerStateComponent";
 import { Weapon } from "../types/weapon";
 import { PlayerAnimationData, PlayerAnimations } from "./PlayerAnimations";
 
@@ -6,13 +9,28 @@ type Variant = Weapon;
 
 export const PlayerStateToAnimationMap: Record<
   Variant,
-  Record<PlayerState, PlayerAnimationData>
+  Record<PlayerMovementState, Record<PlayerActionState, PlayerAnimationData>>
 > = {
   [Weapon.Remington]: {
-    [PlayerState.Shoot]: PlayerAnimations.Remington_Shot,
-    [PlayerState.Reload]: PlayerAnimations.Remington_Reload,
-    [PlayerState.Idle]: PlayerAnimations.Remington_Idle,
-    [PlayerState.Walk]: PlayerAnimations.Remington_Walk,
-    [PlayerState.Run]: PlayerAnimations.Remington_Run,
+    [PlayerMovementState.Idle]: {
+      [PlayerActionState.None]: PlayerAnimations.Remington_Idle,
+      [PlayerActionState.Shoot]: PlayerAnimations.Remington_Shot,
+      [PlayerActionState.Reload]: PlayerAnimations.Remington_Reload,
+    },
+    [PlayerMovementState.Walk]: {
+      [PlayerActionState.None]: PlayerAnimations.Remington_Walk,
+      [PlayerActionState.Shoot]: PlayerAnimations.Remington_Shot,
+      [PlayerActionState.Reload]: PlayerAnimations.Remington_Reload,
+    },
+    [PlayerMovementState.Run]: {
+      [PlayerActionState.None]: PlayerAnimations.Remington_Run,
+      [PlayerActionState.Shoot]: PlayerAnimations.Remington_Shot,
+      [PlayerActionState.Reload]: PlayerAnimations.Remington_Reload,
+    },
+    [PlayerMovementState.Airborne]: {
+      [PlayerActionState.None]: PlayerAnimations.Remington_Idle,
+      [PlayerActionState.Shoot]: PlayerAnimations.Remington_Shot,
+      [PlayerActionState.Reload]: PlayerAnimations.Remington_Reload,
+    },
   },
 };

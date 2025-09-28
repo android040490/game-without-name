@@ -15,6 +15,7 @@ import { PlayerComponent } from "../components/PlayerComponent";
 import { EventBus } from "../event/EventBus";
 import { WeaponReload } from "../event/WeaponReload";
 import { WeaponShot } from "../event/WeaponShot";
+import { PlaySound } from "../event/PlaySound";
 
 export class WeaponSystem extends System {
   private readonly eventBus: EventBus;
@@ -68,6 +69,7 @@ export class WeaponSystem extends System {
       weapon.totalAmmo -= toLoad;
       weapon.ammoInMagazine += toLoad;
       this.eventBus.emit(new WeaponReload(entity));
+      this.eventBus.emit(new PlaySound(entity, weapon.reloadSound));
     }
   }
 
@@ -82,6 +84,7 @@ export class WeaponSystem extends System {
       bulletSize,
       bulletDensity,
       muzzleFlash,
+      shotSound,
     } = weapon;
     const muzzleAnchor = entity
       .getComponent(MeshComponent)
@@ -139,5 +142,6 @@ export class WeaponSystem extends System {
     }
 
     this.eventBus.emit(new WeaponShot(entity));
+    this.eventBus.emit(new PlaySound(entity, shotSound));
   }
 }

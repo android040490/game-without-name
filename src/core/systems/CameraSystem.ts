@@ -1,4 +1,6 @@
 import { CameraComponent } from "../components/CameraComponent";
+import { CameraAdded } from "../event/CameraAdded";
+import { EventBus } from "../event/EventBus";
 import { Game } from "../Game";
 import { CameraManager } from "../managers/CameraManager";
 import { Entity } from "../models/Entity";
@@ -6,11 +8,13 @@ import { System } from "../models/System";
 
 export class CameraSystem extends System {
   private readonly cameraManager: CameraManager;
+  private readonly eventBus: EventBus;
 
   constructor(game: Game) {
     super(game);
 
     this.cameraManager = game.cameraManager;
+    this.eventBus = game.eventBus;
   }
 
   appliesTo(entity: Entity): boolean {
@@ -26,6 +30,7 @@ export class CameraSystem extends System {
     camera.position.y = offsetHeight;
     cameraHolder.add(camera);
     this.cameraManager.setCamera(camera);
+    this.eventBus.emit(new CameraAdded(camera));
   }
 
   removeEntity(entity: Entity): void {

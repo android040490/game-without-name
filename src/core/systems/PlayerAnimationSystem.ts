@@ -56,7 +56,9 @@ export class PlayerAnimationSystem extends System {
     const stateComponent = this.entity.getComponent(PlayerStateComponent)!;
 
     animationComponent.animation = weapon?.name
-      ? PlayerStateToAnimationMap[weapon.name][stateComponent.currentState]
+      ? PlayerStateToAnimationMap[weapon.name][stateComponent.movementState][
+          stateComponent.actionState
+        ]
       : undefined;
   }
 }

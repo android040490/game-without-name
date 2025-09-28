@@ -20,11 +20,12 @@ import { Euler, Quaternion, Vector3 } from "three";
 import { CameraComponent } from "../components/CameraComponent";
 import { WeaponComponent } from "../components/WeaponComponent";
 import {
-  PlayerState,
+  PlayerActionState,
+  PlayerMovementState,
   PlayerStateComponent,
 } from "../components/PlayerStateComponent";
 import { EventBus } from "../event/EventBus";
-import { PlayerStateTransition } from "../event/PlayerStateTransition";
+import { PlayerMovementStateTransition } from "../event/PlayerMovementStateTransition";
 import { PlayerTransitionEvent } from "../components/PlayerStateComponent";
 
 export class PlayerControlSystem extends System {
@@ -35,6 +36,8 @@ export class PlayerControlSystem extends System {
   private entity?: Entity;
   private _quaternion = new Quaternion();
   private _euler = new Euler(0, 0, 0, "YXZ");
+  private readonly walkSpeedThreshold = 0.3;
+  private readonly runSpeedThreshold = 4.3;
 
   constructor(game: Game) {
     super(game);
@@ -100,25 +103,29 @@ export class PlayerControlSystem extends System {
     const playerControlComponent = this.entity.getComponent(
       PlayerControlComponent,
     )!;
-    const armsHolder = this.entity
-      .getComponent(MeshComponent)
-      ?.object.getObjectByName("ArmsHolder");
 
     if (!collider || !rigidBody || !rigidBody.isValid()) {
       return;
     }
 
     const onGround = this.detectGround(rigidBody, collider, height);
+    if (onGround !== playerControlComponent.onGround) {
+      this.eventBus.emit(
+        new PlayerMovementStateTransition(
+          this.entity!,
+          onGround ? PlayerTransitionEvent.Land : PlayerTransitionEvent.InAir,
+        ),
+      );
+    }
     playerControlComponent.onGround = onGround;
 
-    this.computeNextVelocity(playerControlComponent, rigidBody, onGround);
+    this.computeNextVelocity(playerControlComponent);
 
-    const pitch = this.inputManager.pitch;
-    const yaw = this.inputManager.yaw;
-    this._euler.set(pitch, yaw, 0);
-    const rotation = this._quaternion.setFromEuler(this._euler);
-    rigidBody?.setRotation({ x: 0, y: rotation.y, z: 0, w: rotation.w }, true);
-    armsHolder?.rotation.set(pitch, 0, 0);
+    if (onGround) {
+      this.applyVelocity(playerControlComponent, rigidBody);
+    }
+
+    this.applyRotation();
   }
 
   private jump(): void {
@@ -137,6 +144,13 @@ export class PlayerControlSystem extends System {
       },
       true,
     );
+
+    this.eventBus.emit(
+      new PlayerMovementStateTransition(
+        this.entity!,
+        PlayerTransitionEvent.InAir,
+      ),
+    );
   }
 
   private detectGround(
@@ -151,7 +165,7 @@ export class PlayerControlSystem extends System {
       shapeConfig: {
         type: "cylinder",
         height,
-        radius: 0.3,
+        radius: collider.radius() - 0.1,
       },
       targetDistance: 0,
       maxToi: 0.1,
@@ -163,17 +177,16 @@ export class PlayerControlSystem extends System {
 
   private computeNextVelocity(
     playerControlComponent: PlayerControlComponent,
-    rigidBody: RigidBody,
-    onTheGround: boolean,
   ): void {
-    const { velocity, speed, acceleration, damping } = playerControlComponent;
+    const { velocity, speed, acceleration, onGround, damping } =
+      playerControlComponent;
 
     const delta = this.timeManager.timeStep;
 
     // Compute movement direction
     const direction = this.inputManager.playerLocalMovementDirection;
 
-    if (direction.lengthSq() > 0 && onTheGround) {
+    if (direction.lengthSq() > 0 && onGround) {
       direction.normalize(); // Avoid diagonal speed boost
 
       // Apply acceleration
@@ -184,7 +197,7 @@ export class PlayerControlSystem extends System {
         velocity.setLength(speed);
       }
     } else if (velocity.lengthSq() > 0) {
-      const dampingFactor = onTheGround ? damping : damping * 0.1; // Less damping in the air
+      const dampingFactor = onGround ? damping : damping * 0.1; // Less damping in the air
       const factor = Math.pow(1 - dampingFactor, delta * 60);
       velocity.multiplyScalar(factor);
 
@@ -193,28 +206,69 @@ export class PlayerControlSystem extends System {
         velocity.set(0, 0, 0);
       }
     }
+  }
 
-    if (onTheGround) {
-      const currentRotation = rigidBody.rotation();
-      const result = velocity.clone().applyQuaternion(currentRotation);
-      result.y = rigidBody.linvel().y; // Preserve vertical velocity
-      rigidBody.setLinvel(result, true);
-    }
+  private applyVelocity(
+    playerControlComponent: PlayerControlComponent,
+    rigidBody: RigidBody,
+  ): void {
+    const { velocity } = playerControlComponent;
 
-    const currentSpeed = velocity.length();
-    if (onTheGround && currentSpeed > 4) {
+    const currentRotation = rigidBody.rotation();
+    const result = velocity.clone().applyQuaternion(currentRotation);
+    result.y = rigidBody.linvel().y; // Preserve vertical velocity
+    rigidBody.setLinvel(result, true);
+
+    const { movementState: currentState } =
+      this.entity?.getComponent(PlayerStateComponent) ?? {};
+    const newSpeed = velocity.length();
+
+    if (
+      newSpeed <= this.walkSpeedThreshold &&
+      currentState !== PlayerMovementState.Idle
+    ) {
       this.eventBus.emit(
-        new PlayerStateTransition(this.entity!, PlayerTransitionEvent.Run),
+        new PlayerMovementStateTransition(
+          this.entity!,
+          PlayerTransitionEvent.Stop,
+        ),
       );
-    } else if (onTheGround && currentSpeed > 1) {
+    } else if (
+      newSpeed > this.walkSpeedThreshold &&
+      newSpeed <= this.runSpeedThreshold &&
+      currentState !== PlayerMovementState.Walk
+    ) {
       this.eventBus.emit(
-        new PlayerStateTransition(this.entity!, PlayerTransitionEvent.Move),
+        new PlayerMovementStateTransition(
+          this.entity!,
+          PlayerTransitionEvent.Move,
+        ),
       );
-    } else {
+    } else if (
+      newSpeed > this.runSpeedThreshold &&
+      currentState !== PlayerMovementState.Run
+    ) {
       this.eventBus.emit(
-        new PlayerStateTransition(this.entity!, PlayerTransitionEvent.Stop),
+        new PlayerMovementStateTransition(
+          this.entity!,
+          PlayerTransitionEvent.Run,
+        ),
       );
     }
+  }
+
+  private applyRotation(): void {
+    const { rigidBody } = this.entity?.getComponent(PhysicsComponent)!;
+    const armsHolder = this.entity
+      ?.getComponent(MeshComponent)
+      ?.object.getObjectByName("ArmsHolder");
+
+    const pitch = this.inputManager.pitch;
+    const yaw = this.inputManager.yaw;
+    this._euler.set(pitch, yaw, 0);
+    const rotation = this._quaternion.setFromEuler(this._euler);
+    rigidBody?.setRotation({ x: 0, y: rotation.y, z: 0, w: rotation.w }, true);
+    armsHolder?.rotation.set(pitch, 0, 0);
   }
 
   private attack(): void {
@@ -229,8 +283,8 @@ export class PlayerControlSystem extends System {
     }
 
     if (
-      stateComponent?.currentState === PlayerState.Shoot ||
-      stateComponent?.currentState === PlayerState.Reload
+      stateComponent?.actionState === PlayerActionState.Shoot ||
+      stateComponent?.actionState === PlayerActionState.Reload
     ) {
       return;
     }
