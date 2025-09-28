@@ -4,6 +4,7 @@ import { EntityRemoved } from "../event/EntityRemoved";
 import eventBus, { EventBus } from "../event/EventBus";
 import { System } from "../models/System";
 import { Entity } from "../models/Entity";
+import { Constructor } from "../type-utils/constructor";
 
 export class SystemManager {
   private readonly eventBus: EventBus;
@@ -15,6 +16,10 @@ export class SystemManager {
     this.eventBus = eventBus;
 
     this.setListeners();
+  }
+
+  getSystem<T extends System>(systemClass: Constructor<T>): T | undefined {
+    return this.systems.find((s) => s instanceof systemClass) as T;
   }
 
   addSystem(system: System) {

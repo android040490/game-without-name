@@ -3,6 +3,7 @@ export enum SoundAsset {
   RemingtonReload = "sounds/remington-reload.wav",
   PlayerWalkGravel = "sounds/player-walk-gravel.wav",
   PlayerRunGravel = "sounds/player-run-gravel.wav",
+  DangerEnvironment = "sounds/dark-horror-ambience-for-mystical-scenes.mp3",
 }
 
 export const PreloadSounds: SoundAsset[] = [
@@ -10,4 +11,5 @@ export const PreloadSounds: SoundAsset[] = [
   SoundAsset.RemingtonReload,
   SoundAsset.PlayerWalkGravel,
   SoundAsset.PlayerRunGravel,
+  SoundAsset.DangerEnvironment,
 ];

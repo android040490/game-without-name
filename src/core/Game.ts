@@ -14,6 +14,8 @@ import { Constructor } from "./type-utils/constructor";
 import { PhysicsManager } from "./managers/PhysicsManager";
 import { systems } from "./systems";
 import { LevelManager } from "./managers/LevelManager";
+import { AudioSystem } from "./systems/AudioSystem";
+import { SoundAsset } from "./constants/Sounds";
 
 let instance: Game;
 
@@ -61,6 +63,9 @@ export class Game {
   start(): void {
     // Time tick event
     this.eventBus.on(TimeTick, this.update);
+
+    const audioSystem = this.systemManager.getSystem(AudioSystem);
+    audioSystem?.setAmbientSound(SoundAsset.DangerEnvironment);
 
     if (this.debugManager.active) {
       this.setDebug();

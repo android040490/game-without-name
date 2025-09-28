@@ -8,6 +8,7 @@ import { PlayerComponent } from "../components/PlayerComponent";
 import { PlaySound } from "../event/PlaySound";
 import { StopSound } from "../event/StopSound";
 import { ResourcesManager } from "../managers/ResourcesManager";
+import { SoundAsset } from "../constants/Sounds";
 
 export class AudioSystem extends System {
   private readonly resourcesManager: ResourcesManager;
@@ -117,5 +118,16 @@ export class AudioSystem extends System {
     }
 
     return audio;
+  }
+
+  // Global sound
+  setAmbientSound(name: SoundAsset) {
+    const buffer = this.resourcesManager.getAudio(name);
+    if (!buffer) return;
+
+    const audio = new THREE.Audio(this.listener);
+    audio.setBuffer(buffer);
+    audio.setLoop(true);
+    audio.play();
   }
 }
