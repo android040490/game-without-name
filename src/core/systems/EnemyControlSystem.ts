@@ -64,7 +64,7 @@ export class EnemyControlSystem extends System {
       }
 
       if (currentState === EnemyState.ChaseRun) {
-        speed = 7;
+        speed = 3;
       }
 
       if (

@@ -7,6 +7,7 @@ import { PhysicsComponent } from "../components/PhysicsComponent";
 import { AnimationFinished } from "../event/AnimationFinished";
 import { Dead } from "../event/Dead";
 import { EnemyStateTransition } from "../event/EnemyStateTransition";
+import { EnemyStateUpdated } from "../event/EnemyStateUpdated";
 import { EventBus } from "../event/EventBus";
 import { GotDamaged } from "../event/GotDamaged";
 import { Game } from "../Game";
@@ -47,6 +48,7 @@ export class EnemyStateMachineSystem extends System {
       stateComponent.transitions[stateComponent.currentState]?.[event];
     if (next !== undefined && next !== stateComponent.currentState) {
       stateComponent.currentState = next;
+      this.eventBus.emit(new EnemyStateUpdated(entity));
     }
   }
 

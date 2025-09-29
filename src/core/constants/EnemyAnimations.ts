@@ -3,37 +3,51 @@ import { AnimationData } from "../components/AnimationComponent";
 export type EnemyAnimationKey =
   | "idle"
   | "walk"
+  | "walk_2"
   | "run"
-  | "reaction:hit"
-  | "dying";
+  | "reaction_hit"
+  | "reaction_hit_2"
+  | "death"
+  | "death_2"
+  | "scream"
+  | "stand_up"
+  | "stand_up_2";
 
-export interface EnemyAnimationData extends AnimationData<EnemyAnimationKey> {
-  type: "attack" | "idle" | "movement";
-}
+export type EnemyAnimationData = AnimationData<EnemyAnimationKey>;
 
 export class EnemyAnimations {
-  static readonly Idle: EnemyAnimationData = {
-    actionName: "idle",
-    type: "idle",
-  };
-  static readonly Walk: EnemyAnimationData = {
-    actionName: "walk",
-    type: "movement",
-    timeScale: 1.5,
-  };
-  static readonly Run: EnemyAnimationData = {
-    actionName: "run",
-    type: "movement",
-  };
-  static readonly ReactionHit: EnemyAnimationData = {
-    actionName: "reaction:hit",
-    type: "idle",
-    repetitions: 1,
-    timeScale: 2,
-  };
-  static readonly Dying: EnemyAnimationData = {
-    actionName: "dying",
-    type: "idle",
-    repetitions: 1,
-  };
+  static Idle(): EnemyAnimationData {
+    return { actionName: "idle" };
+  }
+  static Scream(): EnemyAnimationData {
+    return { actionName: "scream", repetitions: 1 };
+  }
+  static Walk(): EnemyAnimationData {
+    return {
+      actionName: Math.random() < 0.5 ? "walk" : "walk_2",
+      timeScale: 1.5,
+    };
+  }
+  static Run(): EnemyAnimationData {
+    return { actionName: "run" };
+  }
+  static ReactionHit(): EnemyAnimationData {
+    return {
+      actionName: Math.random() < 0.5 ? "reaction_hit" : "reaction_hit_2",
+      repetitions: 1,
+      timeScale: 2,
+    };
+  }
+  static Dying(): EnemyAnimationData {
+    return {
+      actionName: Math.random() < 0.5 ? "death" : "death_2",
+      repetitions: 1,
+    };
+  }
+  static StandUp(): EnemyAnimationData {
+    return {
+      actionName: Math.random() < 0.5 ? "stand_up" : "stand_up_2",
+      repetitions: 1,
+    };
+  }
 }
