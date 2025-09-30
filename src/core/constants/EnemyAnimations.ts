@@ -5,6 +5,9 @@ export type EnemyAnimationKey =
   | "walk"
   | "walk_2"
   | "run"
+  | "run_2"
+  | "run_crawl"
+  | "injured_run"
   | "reaction_hit"
   | "reaction_hit_2"
   | "death"
@@ -29,7 +32,18 @@ export class EnemyAnimations {
     };
   }
   static Run(): EnemyAnimationData {
-    return { actionName: "run" };
+    const random = Math.random();
+
+    switch (true) {
+      case random < 0.25:
+        return { actionName: "run", timeScale: 1.25 };
+      case random < 0.5:
+        return { actionName: "run_2" };
+      case random < 0.75:
+        return { actionName: "run_crawl", timeScale: 1.35 };
+      default:
+        return { actionName: "injured_run", timeScale: 1.25 };
+    }
   }
   static ReactionHit(): EnemyAnimationData {
     return {

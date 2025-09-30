@@ -45,6 +45,7 @@ export class EnemySpawnSystem extends System {
       new CharacterConfigComponent({
         modelPath: "models/zombie-cop.glb",
         density: 10,
+        height: 2.3,
       }),
     );
     entity.addComponent(
