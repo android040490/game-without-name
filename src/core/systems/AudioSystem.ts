@@ -108,7 +108,7 @@ export class AudioSystem extends System {
 
     audio.setBuffer(buffer);
     if (audio instanceof THREE.PositionalAudio) {
-      audio.setRefDistance(1);
+      audio.setRefDistance(5);
       audio.setMaxDistance(50);
     }
 

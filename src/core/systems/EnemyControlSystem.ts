@@ -51,7 +51,7 @@ export class EnemyControlSystem extends System {
 
       if (currentState === EnemyState.Dead) {
         if (!entity.hasComponent(LifetimeComponent)) {
-          entity.addComponent(new LifetimeComponent(5));
+          entity.addComponent(new LifetimeComponent(10));
         }
 
         continue;
@@ -64,7 +64,7 @@ export class EnemyControlSystem extends System {
       }
 
       if (currentState === EnemyState.ChaseRun) {
-        speed = 7;
+        speed = 4;
       }
 
       if (

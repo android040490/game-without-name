@@ -1,14 +1,19 @@
 const { RigidBodyType } = await import("@dimforge/rapier3d");
 import {
+  EnemyState,
   EnemyStateComponent,
   EnemyTransitionEvent,
 } from "../components/EnemyStateComponent";
 import { PhysicsComponent } from "../components/PhysicsComponent";
+import { SoundAsset } from "../constants/Sounds";
 import { AnimationFinished } from "../event/AnimationFinished";
 import { Dead } from "../event/Dead";
 import { EnemyStateTransition } from "../event/EnemyStateTransition";
+import { EnemyStateUpdated } from "../event/EnemyStateUpdated";
 import { EventBus } from "../event/EventBus";
 import { GotDamaged } from "../event/GotDamaged";
+import { PlaySound } from "../event/PlaySound";
+import { StopSound } from "../event/StopSound";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
@@ -47,6 +52,20 @@ export class EnemyStateMachineSystem extends System {
       stateComponent.transitions[stateComponent.currentState]?.[event];
     if (next !== undefined && next !== stateComponent.currentState) {
       stateComponent.currentState = next;
+      this.eventBus.emit(new EnemyStateUpdated(entity));
+
+      if (next === EnemyState.ChaseWalk || next === EnemyState.ChaseRun) {
+        this.eventBus.emit(new PlaySound(entity, SoundAsset.ZombieGroan, true));
+      } else {
+        this.eventBus.emit(new StopSound(entity, SoundAsset.ZombieGroan));
+      }
+
+      if (next === EnemyState.Scream) {
+        this.eventBus.emit(new PlaySound(entity, SoundAsset.ZombieScream));
+      }
+      if (next === EnemyState.Dying) {
+        this.eventBus.emit(new PlaySound(entity, SoundAsset.ZombieDying));
+      }
     }
   }
 

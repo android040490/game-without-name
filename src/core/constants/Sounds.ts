@@ -4,6 +4,9 @@ export enum SoundAsset {
   PlayerWalkGravel = "sounds/player-walk-gravel.wav",
   PlayerRunGravel = "sounds/player-run-gravel.wav",
   DangerEnvironment = "sounds/dark-horror-ambience-for-mystical-scenes.mp3",
+  ZombieGroan = "sounds/zombie-groan.mp3",
+  ZombieScream = "sounds/zombie-scream.wav",
+  ZombieDying = "sounds/zombie-dying.wav",
 }
 
 export const PreloadSounds: SoundAsset[] = [
@@ -12,4 +15,7 @@ export const PreloadSounds: SoundAsset[] = [
   SoundAsset.PlayerWalkGravel,
   SoundAsset.PlayerRunGravel,
   SoundAsset.DangerEnvironment,
+  SoundAsset.ZombieGroan,
+  SoundAsset.ZombieScream,
+  SoundAsset.ZombieDying,
 ];
