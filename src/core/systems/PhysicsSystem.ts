@@ -9,8 +9,10 @@ import { RotationComponent } from "../components/RotationComponent";
 import { EventBus } from "../event/EventBus";
 import { PlayerPositionUpdated } from "../event/PlayerPositionUpdated";
 import { PlayerComponent } from "../components/PlayerComponent";
+import { CollisionManager } from "../managers/CollisionManager";
 
 export class PhysicsSystem extends System {
+  private readonly collisionManager: CollisionManager;
   private readonly physicsManager: PhysicsManager;
   private readonly timeManager: TimeManager;
   private readonly eventBus: EventBus;
@@ -20,6 +22,7 @@ export class PhysicsSystem extends System {
 
     this.physicsManager = this.game.physicsManager;
     this.timeManager = this.game.timeManager;
+    this.collisionManager = this.game.collisionManager;
     this.eventBus = game.eventBus;
   }
 
@@ -33,6 +36,7 @@ export class PhysicsSystem extends System {
 
     if (collider) {
       this.physicsManager.removeCollider(collider);
+      this.collisionManager.unregisterCollider(collider);
     }
 
     if (rigidBody) {
@@ -57,6 +61,8 @@ export class PhysicsSystem extends System {
     );
     component.collider = collider;
     component.rigidBody = rigidBody;
+
+    this.collisionManager.registerCollider(entity, collider);
   }
 
   update(): void {
@@ -82,5 +88,6 @@ export class PhysicsSystem extends System {
     }
 
     this.physicsManager.update(this.timeManager.timeStep);
+    this.collisionManager.checkCollisions();
   }
 }

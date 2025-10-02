@@ -1,8 +1,6 @@
-import { Game } from "../Game";
+import type { Collider } from "@dimforge/rapier3d";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { Entity } from "../models/Entity";
-import { System } from "../models/System";
-import { PhysicsComponent } from "../components/PhysicsComponent";
 import { Constructor } from "../type-utils/constructor";
 import {
   COLLISION_HANDLERS,
@@ -13,38 +11,23 @@ import {
   CollisionForceHandler,
 } from "../constants/CollisionForceHandlers";
 
-export class CollisionSystem extends System {
+export class CollisionManager {
   private readonly physicsManager: PhysicsManager;
   private colliderToEntityMap: Map<number, Entity> = new Map();
 
-  constructor(game: Game) {
-    super(game);
-
-    this.physicsManager = this.game.physicsManager;
+  constructor(physicsManager: PhysicsManager) {
+    this.physicsManager = physicsManager;
   }
 
-  appliesTo(entity: Entity): boolean {
-    return entity.hasComponent(PhysicsComponent);
+  registerCollider(entity: Entity, collider: Collider) {
+    this.colliderToEntityMap.set(collider.handle, entity);
   }
 
-  addEntity(entity: Entity): void {
-    super.addEntity(entity);
-
-    const collider = entity.getComponent(PhysicsComponent)!.collider;
-    if (!collider) {
-      console.error("CollisionSystem: PhysicsComponent doesn't have collider");
-      return;
-    }
-    this.registerCollider(entity, collider.handle);
+  unregisterCollider(collider: Collider) {
+    this.colliderToEntityMap.delete(collider.handle);
   }
 
-  removeEntity(entity: Entity): void {
-    super.removeEntity(entity);
-
-    this.unregisterCollider(entity);
-  }
-
-  update(): void {
+  checkCollisions(): void {
     this.physicsManager.eventQueue.drainContactForceEvents((event) => {
       const handle1 = event.collider1();
       const handle2 = event.collider2();
@@ -139,18 +122,6 @@ export class CollisionSystem extends System {
       entity1.hasComponents(...entity1Components) &&
       entity2.hasComponents(...entity2Components)
     );
-  }
-
-  private registerCollider(entity: Entity, colliderId: number) {
-    this.colliderToEntityMap.set(colliderId, entity);
-  }
-
-  private unregisterCollider(entity: Entity) {
-    const collider = entity.getComponent(PhysicsComponent)!.collider;
-
-    if (collider?.handle) {
-      this.colliderToEntityMap.delete(collider.handle);
-    }
   }
 
   private getEntityByColliderId(colliderId: number): Entity | null {

@@ -13,7 +13,6 @@ import { PlayerControlSystem } from "./PlayerControlSystem";
 import { EnemyControlSystem } from "./EnemyControlSystem";
 import { PlayerFactorySystem } from "./PlayerFactorySystem";
 import { WeaponSystem } from "./WeaponSystem";
-import { CollisionSystem } from "./CollisionSystem";
 import { DamageSystem } from "./DamageSystem";
 import { EnergyBarSystem } from "./EnergyBarSystem";
 import { JointSystem } from "./JointSystem";
@@ -45,7 +44,6 @@ export const systems: Constructor<System>[] = [
   RenderSystem,
   CameraSystem,
   LifetimeSystem,
-  CollisionSystem,
   DamageSystem,
   EnergyBarSystem,
   AudioSystem,
