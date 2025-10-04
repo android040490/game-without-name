@@ -303,6 +303,14 @@ export class PhysicsManager {
     );
   }
 
+  getColliderByHandle(handle: number): Collider {
+    return this.instance.getCollider(handle);
+  }
+
+  getCollisionGroupsByHandle(handle: number): number {
+    return this.getColliderByHandle(handle).collisionGroups();
+  }
+
   private createColliderDesc(params: ColliderConfig): ColliderDesc {
     const {
       shape,

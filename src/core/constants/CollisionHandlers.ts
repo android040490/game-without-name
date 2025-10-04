@@ -2,34 +2,30 @@ import { BulletComponent } from "../components/BulletComponent";
 import { HealthComponent } from "../components/HealthComponent";
 import { LifetimeComponent } from "../components/LifetimeComponent";
 import { MakeDamageComponent } from "../components/MakeDamageComponent";
-import { PhysicsComponent } from "../components/PhysicsComponent";
 import { Entity } from "../models/Entity";
-import { Constructor } from "../type-utils/constructor";
+import { InteractionGroups as IG } from "./InteractionGroups";
 
-export type CollisionHandler = {
-  entity1Components: Constructor[];
-  entity2Components: Constructor[];
-  handler: (entity1: Entity, entity2: Entity) => void;
-};
+export type CollisionHandler = (entity1: Entity, entity2: Entity) => void;
 
-export const COLLISION_HANDLERS: CollisionHandler[] = [
+export const COLLISION_HANDLERS: Record<string, CollisionHandler | undefined> =
   {
-    entity1Components: [],
-    entity2Components: [BulletComponent],
-    handler: (hitEntity: Entity, bullet: Entity) => {
-      const physicsComponent = hitEntity.getComponent(PhysicsComponent);
+    [`${IG.HURT_BOX}:${IG.PROJECTILE}`]: (
+      hitEntity: Entity,
+      bullet: Entity,
+    ) => {
+      const bulletComponent = bullet.getComponent(BulletComponent);
+      if (!bulletComponent) {
+        return;
+      }
+
       const bulletLifeTime = bullet.getComponent(LifetimeComponent);
 
-      if (
-        bulletLifeTime &&
-        !physicsComponent?.collider?.isSensor() &&
-        !hitEntity.hasComponent(BulletComponent)
-      ) {
-        bulletLifeTime.timeLeft = 0.05;
+      if (bulletLifeTime) {
+        bulletLifeTime.timeLeft = 0;
       }
 
       if (hitEntity.hasComponent(HealthComponent)) {
-        const { damage } = bullet.getComponent(BulletComponent)!;
+        const { damage } = bulletComponent;
         const makeDamage = hitEntity.getComponent(MakeDamageComponent);
 
         makeDamage
@@ -37,5 +33,4 @@ export const COLLISION_HANDLERS: CollisionHandler[] = [
           : hitEntity.addComponent(new MakeDamageComponent(damage));
       }
     },
-  },
-];
+  };

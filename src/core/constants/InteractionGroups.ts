@@ -11,6 +11,7 @@ export class InteractionGroups {
     CollisionGroups.GROUND |
       CollisionGroups.WALL |
       CollisionGroups.DYNAMIC_OBJECT |
+      CollisionGroups.TRIGGER_ZONE |
       CollisionGroups.ENEMY,
   );
 
@@ -19,19 +20,37 @@ export class InteractionGroups {
     CollisionGroups.ENEMY | CollisionGroups.DYNAMIC_OBJECT,
   );
 
-  static readonly ENEMY = this.createMask(
-    CollisionGroups.ENEMY,
-    CollisionGroups.GROUND |
-      CollisionGroups.WALL |
-      CollisionGroups.ENEMY |
-      CollisionGroups.PLAYER |
-      CollisionGroups.WEAPON |
-      CollisionGroups.DYNAMIC_OBJECT,
-  );
-
   static readonly DYNAMIC_OBJECT = this.createMask(
     CollisionGroups.DYNAMIC_OBJECT,
     CollisionGroups.ALL,
+  );
+
+  static readonly BOUNDING_BOX = this.createMask(
+    CollisionGroups.DYNAMIC_OBJECT,
+    CollisionGroups.DYNAMIC_OBJECT |
+      CollisionGroups.WALL |
+      CollisionGroups.GROUND |
+      CollisionGroups.PLAYER,
+  );
+
+  static readonly PROJECTILE = this.createMask(
+    CollisionGroups.PROJECTILE,
+    CollisionGroups.ENEMY |
+      CollisionGroups.PLAYER |
+      CollisionGroups.WALL |
+      CollisionGroups.GROUND |
+      CollisionGroups.DYNAMIC_OBJECT |
+      CollisionGroups.TRIGGER_ZONE,
+  );
+
+  static readonly HIT_BOX = this.createMask(
+    CollisionGroups.TRIGGER_ZONE,
+    CollisionGroups.PLAYER | CollisionGroups.DYNAMIC_OBJECT,
+  );
+
+  static readonly HURT_BOX = this.createMask(
+    CollisionGroups.TRIGGER_ZONE | CollisionGroups.DYNAMIC_OBJECT,
+    CollisionGroups.PROJECTILE | CollisionGroups.TRIGGER_ZONE,
   );
 
   /**

@@ -54,7 +54,7 @@ export class CharacterFactorySystem extends System {
         colliderConfig: {
           shape: { type: "capsule", height: capsuleLength, radius },
           density,
-          collisionGroups: InteractionGroups.ENEMY,
+          collisionGroups: InteractionGroups.BOUNDING_BOX,
         },
         rigidBodyConfig: {
           rigidBodyType: "dynamic",

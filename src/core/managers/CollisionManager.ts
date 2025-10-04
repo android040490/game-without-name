@@ -40,6 +40,7 @@ export class CollisionManager {
         return;
       }
 
+      // TODO: update handleContactForces to use the same approach as handleCollision
       for (const collisionForceHandler of COLLISION_FORCE_HANDLERS) {
         this.handleContactForces(
           entity1,
@@ -56,16 +57,7 @@ export class CollisionManager {
           return;
         }
 
-        const entity1 = this.getEntityByColliderId(handle1);
-        const entity2 = this.getEntityByColliderId(handle2);
-
-        if (!entity1 || !entity2) {
-          return;
-        }
-
-        for (const collisionHandler of COLLISION_HANDLERS) {
-          this.handleCollision(entity1, entity2, collisionHandler);
-        }
+        this.handleCollision(handle1, handle2);
       },
     );
   }
@@ -96,18 +88,27 @@ export class CollisionManager {
     }
   }
 
-  private handleCollision(
-    entity1: Entity,
-    entity2: Entity,
-    collisionHandler: CollisionHandler,
-  ) {
-    const { entity1Components, entity2Components, handler } = collisionHandler;
+  private handleCollision(handle1: number, handle2: number) {
+    const entity1 = this.getEntityByColliderId(handle1);
+    const entity2 = this.getEntityByColliderId(handle2);
 
-    if (this.isMatch(entity1, entity2, entity1Components, entity2Components)) {
+    if (!entity1 || !entity2) {
+      return;
+    }
+
+    const collisionGroup1 =
+      this.physicsManager.getCollisionGroupsByHandle(handle1);
+    const collisionGroup2 =
+      this.physicsManager.getCollisionGroupsByHandle(handle2);
+
+    let handler = this.getCollisionHandler(collisionGroup1, collisionGroup2);
+    if (handler) {
       handler(entity1, entity2);
-    } else if (
-      this.isMatch(entity2, entity1, entity1Components, entity2Components)
-    ) {
+      return;
+    }
+
+    handler = this.getCollisionHandler(collisionGroup2, collisionGroup1);
+    if (handler) {
       handler(entity2, entity1);
     }
   }
@@ -126,5 +127,12 @@ export class CollisionManager {
 
   private getEntityByColliderId(colliderId: number): Entity | null {
     return this.colliderToEntityMap.get(colliderId) || null;
+  }
+
+  private getCollisionHandler(
+    collisionGroup1: number,
+    collisionGroup2: number,
+  ): CollisionHandler | undefined {
+    return COLLISION_HANDLERS[`${collisionGroup1}:${collisionGroup2}`];
   }
 }
