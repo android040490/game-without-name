@@ -16,6 +16,7 @@ import { systems } from "./systems";
 import { LevelManager } from "./managers/LevelManager";
 import { AudioSystem } from "./systems/AudioSystem";
 import { SoundAsset } from "./constants/Sounds";
+import { CollisionManager } from "./managers/CollisionManager";
 
 let instance: Game;
 
@@ -34,6 +35,7 @@ export class Game {
   public readonly entityManager!: EntityManager;
   public readonly physicsManager!: PhysicsManager;
   public readonly levelManager!: LevelManager;
+  public readonly collisionManager!: CollisionManager;
 
   constructor(canvas: HTMLCanvasElement) {
     if (instance) {
@@ -53,6 +55,7 @@ export class Game {
     this.entityManager = new EntityManager();
     this.physicsManager = new PhysicsManager();
     this.levelManager = new LevelManager(this);
+    this.collisionManager = new CollisionManager(this.physicsManager);
     this.eventBus = eventBus;
 
     this.update = this.update.bind(this);
