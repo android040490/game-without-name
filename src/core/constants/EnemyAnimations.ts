@@ -14,7 +14,9 @@ export type EnemyAnimationKey =
   | "death_2"
   | "scream"
   | "stand_up"
-  | "stand_up_2";
+  | "stand_up_2"
+  | "punch"
+  | "punch_2";
 
 export type EnemyAnimationData = AnimationData<EnemyAnimationKey>;
 
@@ -50,6 +52,13 @@ export class EnemyAnimations {
       actionName: Math.random() < 0.5 ? "reaction_hit" : "reaction_hit_2",
       repetitions: 1,
       timeScale: 2,
+    };
+  }
+  static Attack(): EnemyAnimationData {
+    return {
+      actionName: Math.random() < 0.5 ? "punch" : "punch_2",
+      repetitions: 1,
+      timeScale: 1.5,
     };
   }
   static Dying(): EnemyAnimationData {

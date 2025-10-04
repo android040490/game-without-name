@@ -54,7 +54,11 @@ export class EnemyStateMachineSystem extends System {
       stateComponent.currentState = next;
       this.eventBus.emit(new EnemyStateUpdated(entity));
 
-      if (next === EnemyState.ChaseWalk || next === EnemyState.ChaseRun) {
+      if (
+        [EnemyState.ChaseWalk, EnemyState.ChaseRun, EnemyState.Attack].includes(
+          next,
+        )
+      ) {
         this.eventBus.emit(new PlaySound(entity, SoundAsset.ZombieGroan, true));
       } else {
         this.eventBus.emit(new StopSound(entity, SoundAsset.ZombieGroan));

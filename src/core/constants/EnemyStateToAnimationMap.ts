@@ -10,5 +10,6 @@ export const EnemyStateToAnimationMap: Partial<
   [EnemyState.Damaged]: EnemyAnimations.ReactionHit,
   [EnemyState.Scream]: EnemyAnimations.Scream,
   [EnemyState.StandUp]: EnemyAnimations.StandUp,
+  [EnemyState.Attack]: EnemyAnimations.Attack,
   [EnemyState.Dying]: EnemyAnimations.Dying,
 };

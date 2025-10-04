@@ -19,6 +19,7 @@ import {
 } from "../components/PlayerStateComponent";
 import { Weapon } from "../types/weapon";
 import { SoundAsset } from "../constants/Sounds";
+import { HealthComponent } from "../components/HealthComponent";
 
 export class PlayerFactorySystem extends System {
   private readonly resourcesManager: ResourcesManager;
@@ -115,6 +116,7 @@ export class PlayerFactorySystem extends System {
         PlayerMovementState.Idle,
         PlayerActionState.None,
       ),
+      new HealthComponent(60),
     );
 
     entity.addComponents(components);

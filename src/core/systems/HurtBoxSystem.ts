@@ -33,7 +33,10 @@ export class HurtBoxSystem extends System {
     const hurtBoxes: Hurtbox[] = [];
 
     mesh?.traverse((object) => {
-      if (object.name.startsWith("Hurtbox")) {
+      const isHitbox = object.name.startsWith("Hitbox");
+      const isHurtbox = object.name.startsWith("Hurtbox");
+
+      if (isHurtbox || isHitbox) {
         if (!(object instanceof Mesh)) {
           return;
         }
@@ -54,7 +57,9 @@ export class HurtBoxSystem extends System {
           },
           sensor: true,
           activeEvents: ActiveEvents.COLLISION_EVENTS,
-          collisionGroups: InteractionGroups.HURT_BOX,
+          collisionGroups: isHitbox
+            ? InteractionGroups.HIT_BOX
+            : InteractionGroups.HURT_BOX,
         });
         this.collisionManager.registerCollider(entity, collider);
 

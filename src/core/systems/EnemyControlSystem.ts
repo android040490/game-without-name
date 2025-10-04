@@ -13,7 +13,9 @@ import { LifetimeComponent } from "../components/LifetimeComponent";
 import {
   EnemyState,
   EnemyStateComponent,
+  EnemyTransitionEvent,
 } from "../components/EnemyStateComponent";
+import { EnemyStateTransition } from "../event/EnemyStateTransition";
 
 export class EnemyControlSystem extends System {
   private readonly timeManager: TimeManager;
@@ -57,6 +59,10 @@ export class EnemyControlSystem extends System {
         continue;
       }
 
+      if (!position || !rotation) {
+        continue;
+      }
+
       let speed = 0;
 
       if (currentState === EnemyState.ChaseWalk) {
@@ -67,9 +73,18 @@ export class EnemyControlSystem extends System {
         speed = 4;
       }
 
+      const distanceToPlayer = position?.distanceTo(this.targetDirection);
       if (
-        position &&
-        rotation &&
+        distanceToPlayer &&
+        distanceToPlayer < 1.5 &&
+        currentState !== EnemyState.Attack
+      ) {
+        this.eventBus.emit(
+          new EnemyStateTransition(entity, EnemyTransitionEvent.StartAttack),
+        );
+      }
+
+      if (
         currentState !== EnemyState.Damaged &&
         currentState !== EnemyState.Dying
       ) {
@@ -79,13 +94,12 @@ export class EnemyControlSystem extends System {
           rotation,
         );
       }
-      if (position) {
-        characterMovementComponent.position = this.computeNextPosition(
-          this.targetDirection,
-          position,
-          speed,
-        );
-      }
+
+      characterMovementComponent.position = this.computeNextPosition(
+        this.targetDirection,
+        position,
+        speed,
+      );
     }
   }
 

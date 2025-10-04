@@ -1,4 +1,8 @@
 import { BulletComponent } from "../components/BulletComponent";
+import {
+  EnemyState,
+  EnemyStateComponent,
+} from "../components/EnemyStateComponent";
 import { HealthComponent } from "../components/HealthComponent";
 import { LifetimeComponent } from "../components/LifetimeComponent";
 import { MakeDamageComponent } from "../components/MakeDamageComponent";
@@ -31,6 +35,20 @@ export const COLLISION_HANDLERS: Record<string, CollisionHandler | undefined> =
         makeDamage
           ? (makeDamage.damage += damage)
           : hitEntity.addComponent(new MakeDamageComponent(damage));
+      }
+    },
+    [`${IG.HIT_BOX}:${IG.PLAYER}`]: (attacker: Entity, player: Entity) => {
+      const { currentState } = attacker.getComponent(EnemyStateComponent) ?? {};
+      if (
+        currentState === EnemyState.Attack &&
+        player.hasComponent(HealthComponent)
+      ) {
+        const damage = 1;
+        const makeDamage = player.getComponent(MakeDamageComponent);
+
+        makeDamage
+          ? (makeDamage.damage += damage)
+          : player.addComponent(new MakeDamageComponent(damage));
       }
     },
   };
