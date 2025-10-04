@@ -8,9 +8,9 @@ import { Game } from "../Game";
 import { PhysicsManager } from "../managers/PhysicsManager";
 import { CollisionManager } from "../managers/CollisionManager";
 import { InteractionGroups } from "../constants/InteractionGroups";
-import { Hurtbox, HurtboxComponent } from "../components/HurtboxComponent";
+import { Hitbox, HitboxComponent } from "../components/HitboxComponent";
 
-export class HurtBoxSystem extends System {
+export class HitboxSystem extends System {
   private readonly physicsManager: PhysicsManager;
   private readonly collisionManager: CollisionManager;
 
@@ -30,7 +30,7 @@ export class HurtBoxSystem extends System {
 
     const mesh = entity.getComponent(MeshComponent)?.object;
 
-    const hurtBoxes: Hurtbox[] = [];
+    const hurtBoxes: Hitbox[] = [];
 
     mesh?.traverse((object) => {
       const isHitbox = object.name.startsWith("Hitbox");
@@ -55,7 +55,7 @@ export class HurtBoxSystem extends System {
             type: "box",
             sizes: { x: size.x, y: size.y, z: size.z },
           },
-          sensor: true,
+          // sensor: true,
           activeEvents: ActiveEvents.COLLISION_EVENTS,
           collisionGroups: isHitbox
             ? InteractionGroups.HIT_BOX
@@ -68,13 +68,13 @@ export class HurtBoxSystem extends System {
     });
 
     if (hurtBoxes.length) {
-      entity.addComponent(new HurtboxComponent(hurtBoxes));
+      entity.addComponent(new HitboxComponent(hurtBoxes));
     }
   }
 
   removeEntity(entity: Entity): void {
     super.removeEntity(entity);
-    const { hurtboxes } = entity.getComponent(HurtboxComponent) ?? {};
+    const { hurtboxes } = entity.getComponent(HitboxComponent) ?? {};
     if (!hurtboxes) {
       return;
     }
@@ -87,7 +87,7 @@ export class HurtBoxSystem extends System {
 
   update(): void {
     for (const [_, entity] of this.entities) {
-      const { hurtboxes } = entity.getComponent(HurtboxComponent) ?? {};
+      const { hurtboxes } = entity.getComponent(HitboxComponent) ?? {};
       if (!hurtboxes) {
         continue;
       }
