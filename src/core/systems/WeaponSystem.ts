@@ -16,6 +16,7 @@ import { EventBus } from "../event/EventBus";
 import { WeaponReload } from "../event/WeaponReload";
 import { WeaponShot } from "../event/WeaponShot";
 import { PlaySound } from "../event/PlaySound";
+import { InteractionGroups } from "../constants/InteractionGroups";
 
 export class WeaponSystem extends System {
   private readonly eventBus: EventBus;
@@ -131,6 +132,7 @@ export class WeaponSystem extends System {
             shape: { type: "sphere", radius: bulletSize },
             density: bulletDensity,
             activeEvents: ActiveEvents.COLLISION_EVENTS,
+            collisionGroups: InteractionGroups.PROJECTILE,
           },
         }),
         new PositionComponent(muzzlePos!.x, muzzlePos!.y, muzzlePos!.z),
