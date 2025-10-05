@@ -18,6 +18,9 @@ import {
 import { EnemyStateTransition } from "../event/EnemyStateTransition";
 
 export class EnemyControlSystem extends System {
+  private readonly walkingSpeed = 1;
+  private readonly runningSpeed = 4;
+  private readonly attackThreshold = 1.5;
   private readonly timeManager: TimeManager;
   private readonly eventBus: EventBus;
 
@@ -66,17 +69,17 @@ export class EnemyControlSystem extends System {
       let speed = 0;
 
       if (currentState === EnemyState.ChaseWalk) {
-        speed = 1;
+        speed = this.walkingSpeed;
       }
 
       if (currentState === EnemyState.ChaseRun) {
-        speed = 4;
+        speed = this.runningSpeed;
       }
 
       const distanceToPlayer = position?.distanceTo(this.targetDirection);
       if (
         distanceToPlayer &&
-        distanceToPlayer < 1.5 &&
+        distanceToPlayer < this.attackThreshold &&
         currentState !== EnemyState.Attack
       ) {
         this.eventBus.emit(
