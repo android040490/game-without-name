@@ -1,11 +1,11 @@
 import type { Collider } from "@dimforge/rapier3d";
 import { Mesh } from "three";
 
-export interface Hurtbox {
+export interface Hitbox {
   mesh: Mesh;
   collider: Collider;
 }
 
-export class HurtboxComponent {
-  constructor(public hurtboxes: Hurtbox[]) {}
+export class HitboxComponent {
+  constructor(public hurtboxes: Hitbox[]) {}
 }

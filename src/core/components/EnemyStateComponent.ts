@@ -7,6 +7,7 @@ export enum EnemyState {
   Dead = "Dead",
   Scream = "Scream",
   StandUp = "StandUp",
+  Attack = "Attack",
 }
 
 export enum EnemyTransitionEvent {
@@ -14,6 +15,7 @@ export enum EnemyTransitionEvent {
   Die = "die",
   TakeDamage = "takeDamage",
   Finished = "finished",
+  StartAttack = "startAttack",
 }
 
 export class EnemyStateComponent {
@@ -25,14 +27,22 @@ export class EnemyStateComponent {
       takeDamage: EnemyState.Damaged,
       die: EnemyState.Dying,
       finished: EnemyState.ChaseWalk,
+      startAttack: EnemyState.Attack,
     },
     [EnemyState.ChaseWalk]: {
       takeDamage: EnemyState.Damaged,
       die: EnemyState.Dying,
+      startAttack: EnemyState.Attack,
     },
     [EnemyState.ChaseRun]: {
       takeDamage: EnemyState.Damaged,
       die: EnemyState.Dying,
+      startAttack: EnemyState.Attack,
+    },
+    [EnemyState.Attack]: {
+      takeDamage: EnemyState.Damaged,
+      die: EnemyState.Dying,
+      finished: EnemyState.ChaseWalk,
     },
     [EnemyState.Damaged]: {
       die: EnemyState.Dying,
