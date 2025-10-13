@@ -1,11 +1,8 @@
-const { RigidBodyType } = await import("@dimforge/rapier3d");
 import {
   EnemyState,
   EnemyStateComponent,
   EnemyTransitionEvent,
 } from "../components/EnemyStateComponent";
-import { HealthComponent } from "../components/HealthComponent";
-import { PhysicsComponent } from "../components/PhysicsComponent";
 import { SoundAsset } from "../constants/Sounds";
 import { AnimationFinished } from "../event/AnimationFinished";
 import { EnemyStateTransition } from "../event/EnemyStateTransition";
@@ -33,10 +30,6 @@ export class EnemyStateMachineSystem extends System {
       EnemyStateTransition,
       this.handleTransitionEvent.bind(this),
     );
-  }
-
-  appliesTo(entity: Entity): boolean {
-    return entity.hasComponents(EnemyStateComponent);
   }
 
   private transition(entity: Entity, event: EnemyTransitionEvent) {
@@ -75,39 +68,7 @@ export class EnemyStateMachineSystem extends System {
     this.transition(entity, transitionEvent);
   }
 
-  private handleGotDamage(entity: Entity): void {
-    this.transition(entity, EnemyTransitionEvent.TakeDamage);
-  }
-
-  private handleDead(entity: Entity): void {
-    const { rigidBody, collider } = entity.getComponent(PhysicsComponent) ?? {};
-
-    rigidBody?.setBodyType(RigidBodyType.KinematicPositionBased, true);
-    collider?.setSensor(true);
-
-    this.transition(entity, EnemyTransitionEvent.Die);
-  }
-
   private handleAnimationFinished(event: AnimationFinished) {
     this.transition(event.entity, EnemyTransitionEvent.Finished);
-  }
-
-  update(): void {
-    for (const [_, entity] of this.entities) {
-      const healthComponent = entity.getComponent(HealthComponent);
-
-      if (!healthComponent) {
-        continue;
-      }
-      const { damage, isDead } = healthComponent;
-
-      if (isDead) {
-        this.handleDead(entity);
-      }
-
-      if (damage) {
-        this.handleGotDamage(entity);
-      }
-    }
   }
 }

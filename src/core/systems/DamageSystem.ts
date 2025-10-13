@@ -12,12 +12,12 @@ export class DamageSystem extends System {
       const healthComponent = entity.getComponent(HealthComponent)!;
       const { damage } = healthComponent;
 
+      if (!damage) {
+        continue;
+      }
+
       healthComponent.health -= damage;
       healthComponent.damage = 0;
-
-      if (healthComponent.health <= 0) {
-        healthComponent.isDead = true;
-      }
     }
   }
 }

@@ -1,22 +1,27 @@
 import * as THREE from "three";
 
 export class ProgressBar extends THREE.Sprite {
-  public readonly progress: THREE.Uniform<number>;
+  private readonly _value: THREE.Uniform<number>;
+  private readonly _maxValue: THREE.Uniform<number>;
 
-  constructor(progress: number = 1) {
+  constructor(maxValue: number, value?: number) {
     super();
-    this.progress = new THREE.Uniform(progress);
+    this._value = new THREE.Uniform(value ?? maxValue);
+    this._maxValue = new THREE.Uniform(value ?? maxValue);
     this.material = new THREE.SpriteMaterial();
 
     this.material.onBeforeCompile = (shader) => {
-      shader.uniforms.progress = this.progress;
+      shader.uniforms.maxValue = this._maxValue;
+      shader.uniforms.value = this._value;
       shader.fragmentShader = `
           #define ss(a, b, c) smoothstep(a, b, c)
-          uniform float progress;
+          uniform float maxValue;
+          uniform float value;
           ${shader.fragmentShader}
         `.replace(
         `outgoingLight = diffuseColor.rgb;`,
         ` 
+            float progress = value / maxValue;
             outgoingLight = diffuseColor.rgb;
             vec3 backColor = vec3(0);
             float pb = step(progress, vUv.x);
@@ -34,5 +39,9 @@ export class ProgressBar extends THREE.Sprite {
     };
     this.material.defines = { USE_UV: "" };
     this.center.set(0.5, 0);
+  }
+
+  set value(value: number) {
+    this._value.value = value;
   }
 }

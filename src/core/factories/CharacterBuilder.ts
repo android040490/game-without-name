@@ -1,41 +1,37 @@
 import * as THREE from "three";
 import { Game } from "../Game";
-import { Entity } from "../models/Entity";
-import { System } from "../models/System";
 import { MeshComponent } from "../components/MeshComponent";
 import { ResourcesManager } from "../managers/ResourcesManager";
-import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
 import { PhysicsComponent } from "../components/PhysicsComponent";
 import { GLTF, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { AnimationComponent } from "../components/AnimationComponent";
-import { MeshBuilder } from "../factories/MeshBuilder";
+import { MeshBuilder } from "./MeshBuilder";
 import { InteractionGroups } from "../constants/InteractionGroups";
-import { EnergyBarComponent } from "../components/EnergyBarComponent";
+import { Entity } from "../models/Entity";
 
-export class CharacterFactorySystem extends System {
+export interface CharacterConfig {
+  modelPath?: string;
+  height?: number;
+  density?: number;
+  isBoundingBoxVisible?: boolean;
+}
+
+export class CharacterBuilder {
   private readonly resourcesManager: ResourcesManager;
   private readonly meshBuilder: MeshBuilder;
 
   constructor(game: Game) {
-    super(game);
-
-    this.resourcesManager = this.game.resourcesManager;
+    this.resourcesManager = game.resourcesManager;
     this.meshBuilder = new MeshBuilder();
   }
 
-  appliesTo(entity: Entity): boolean {
-    return entity.hasComponent(CharacterConfigComponent);
-  }
-
-  addEntity(entity: Entity): void {
-    super.addEntity(entity); // TODO: remove this, there is no point in storing entities in this system
-
-    this.createCharacter(entity);
-  }
-
-  private async createCharacter(entity: Entity): Promise<void> {
-    const { modelPath, height, density, isBoundingBoxVisible } =
-      entity.getComponent(CharacterConfigComponent)!;
+  async createCharacter(config: CharacterConfig): Promise<Entity> {
+    const {
+      modelPath,
+      height = 2,
+      density = 10,
+      isBoundingBoxVisible = false,
+    } = config;
 
     let model: GLTF | undefined;
 
@@ -61,7 +57,6 @@ export class CharacterFactorySystem extends System {
           lockRotation: true,
         },
       }),
-      new EnergyBarComponent(height / 2 + 0.1),
     ];
 
     if (modelPath) {
@@ -84,7 +79,10 @@ export class CharacterFactorySystem extends System {
       }
     });
 
+    const entity = new Entity();
     entity.addComponents(components);
+
+    return entity;
   }
 
   private createCapsule(

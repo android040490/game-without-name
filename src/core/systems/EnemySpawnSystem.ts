@@ -1,12 +1,10 @@
 import * as THREE from "three";
 import { CharacterMovementComponent } from "../components/CharacterMovementComponent";
 import { EnemyComponent } from "../components/EnemyComponent";
-import { CharacterConfigComponent } from "../components/CharacterConfigComponent";
 import { PositionComponent } from "../components/PositionComponent";
 import { RotationComponent } from "../components/RotationComponent";
 import { Game } from "../Game";
 import { EntityManager } from "../managers/EntityManager";
-import { Entity } from "../models/Entity";
 import { System } from "../models/System";
 import { HealthComponent } from "../components/HealthComponent";
 import {
@@ -14,15 +12,19 @@ import {
   EnemyStateComponent,
 } from "../components/EnemyStateComponent";
 import { Renderer } from "../managers/Renderer";
+import { CharacterBuilder } from "../factories/CharacterBuilder";
+import { EnergyBarComponent } from "../components/EnergyBarComponent";
 
 export class EnemySpawnSystem extends System {
   private readonly entityManager: EntityManager;
+  private readonly characterBuilder: CharacterBuilder;
   private readonly render: Renderer;
 
   constructor(game: Game) {
     super(game);
 
     this.entityManager = game.entityManager;
+    this.characterBuilder = game.characterBuilder;
     this.render = game.renderer;
   }
 
@@ -37,23 +39,23 @@ export class EnemySpawnSystem extends System {
     return Math.random() < 0.002;
   }
 
-  private spawnEnemy() {
-    const entity = new Entity();
+  private async spawnEnemy() {
+    const height = 2.3;
+    const health = 30;
+    const entity = await this.characterBuilder.createCharacter({
+      modelPath: "models/zombie-cop.glb",
+      density: 10,
+      height,
+    });
     const spawnPosition = this.getRandomSpawnPosition();
     entity.addComponent(new EnemyComponent());
-    entity.addComponent(
-      new CharacterConfigComponent({
-        modelPath: "models/zombie-cop.glb",
-        density: 10,
-        height: 2.3,
-      }),
-    );
     entity.addComponent(
       new PositionComponent(spawnPosition.x, spawnPosition.y, spawnPosition.z),
     );
     entity.addComponent(new RotationComponent(0, 0, 0, 1));
     entity.addComponent(new CharacterMovementComponent());
-    entity.addComponent(new HealthComponent(30));
+    entity.addComponent(new HealthComponent(health));
+    entity.addComponent(new EnergyBarComponent(health, height / 2 + 0.1));
     entity.addComponent(new EnemyStateComponent(EnemyState.StandUp));
     this.entityManager.addEntity(entity);
   }
