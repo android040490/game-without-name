@@ -4,7 +4,6 @@ import { RenderSystem } from "./RenderSystem";
 import { PhysicsSystem } from "./PhysicsSystem";
 import { MeshFactorySystem } from "./MeshFactorySystem";
 import { EnvironmentSystem } from "./EnvironmentSystem";
-import { CharacterFactorySystem } from "./CharacterFactorySystem";
 import { AnimationSystem } from "./AnimationSystem";
 import { CharacterMovementSystem } from "./CharacterMovementSystem";
 import { EnemySpawnSystem } from "./EnemySpawnSystem";
@@ -14,7 +13,7 @@ import { EnemyControlSystem } from "./EnemyControlSystem";
 import { PlayerFactorySystem } from "./PlayerFactorySystem";
 import { WeaponSystem } from "./WeaponSystem";
 import { DamageSystem } from "./DamageSystem";
-import { EnergyBarSystem } from "./EnergyBarSystem";
+import { EnemyHealthSystem } from "./EnemyHealthSystem";
 import { JointSystem } from "./JointSystem";
 import { LifetimeSystem } from "./LifetimeSystem";
 import { PlayerStateMachineSystem } from "./PlayerStateMachineSystem";
@@ -32,7 +31,6 @@ export const systems: Constructor<System>[] = [
   EnemyStateMachineSystem,
   EnemyAnimationSystem,
   PlayerFactorySystem,
-  CharacterFactorySystem,
   PlayerControlSystem,
   PlayerStateMachineSystem,
   PlayerAnimationSystem,
@@ -47,6 +45,6 @@ export const systems: Constructor<System>[] = [
   RenderSystem,
   CameraSystem,
   LifetimeSystem,
-  EnergyBarSystem,
+  EnemyHealthSystem,
   AudioSystem,
 ];
