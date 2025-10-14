@@ -1,6 +1,8 @@
 import { PlayerHUD } from "../../ui/PlayerHUD";
+import { CameraComponent } from "../components/CameraComponent";
 import { HealthComponent } from "../components/HealthComponent";
 import { PlayerComponent } from "../components/PlayerComponent";
+import { PlayerDamageEffect } from "../custom-objects/PlayerDamageEffect";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
@@ -8,11 +10,13 @@ import { System } from "../models/System";
 export class PlayerHealthSystem extends System {
   private entity?: Entity;
   private playerHUD: PlayerHUD | null;
+  private playerDamageEffect: PlayerDamageEffect;
 
   constructor(game: Game) {
     super(game);
 
     this.playerHUD = document.querySelector("player-hud");
+    this.playerDamageEffect = new PlayerDamageEffect();
   }
 
   appliesTo(entity: Entity): boolean {
@@ -30,6 +34,8 @@ export class PlayerHealthSystem extends System {
 
     super.addEntity(entity);
     this.entity = entity;
+    const { camera } = entity.getComponent(CameraComponent) ?? {};
+    camera?.add(this.playerDamageEffect.mesh);
   }
 
   update(): void {
@@ -43,6 +49,7 @@ export class PlayerHealthSystem extends System {
     if (damage) {
       healthComponent.health -= damage;
       healthComponent.damage = 0;
+      this.playerDamageEffect.trigger(damage);
       this.updateHealthBar(healthComponent);
     }
   }
