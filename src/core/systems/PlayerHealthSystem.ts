@@ -1,0 +1,55 @@
+import { PlayerHUD } from "../../ui/PlayerHUD";
+import { HealthComponent } from "../components/HealthComponent";
+import { PlayerComponent } from "../components/PlayerComponent";
+import { Game } from "../Game";
+import { Entity } from "../models/Entity";
+import { System } from "../models/System";
+
+export class PlayerHealthSystem extends System {
+  private entity?: Entity;
+  private playerHUD: PlayerHUD | null;
+
+  constructor(game: Game) {
+    super(game);
+
+    this.playerHUD = document.querySelector("player-hud");
+  }
+
+  appliesTo(entity: Entity): boolean {
+    return entity.hasComponents(PlayerComponent, HealthComponent);
+  }
+
+  addEntity(entity: Entity): void {
+    if (this.entities.size === 1) {
+      console.error(
+        "PlayerHealthSystem: a game cannot have more than one entity with a PlayerComponent. Attempting to add an entity: ",
+        entity,
+      );
+      return;
+    }
+
+    super.addEntity(entity);
+    this.entity = entity;
+  }
+
+  update(): void {
+    if (!this.entity) {
+      return;
+    }
+
+    const healthComponent = this.entity.getComponent(HealthComponent)!;
+    const { damage } = healthComponent;
+
+    if (damage) {
+      healthComponent.health -= damage;
+      healthComponent.damage = 0;
+      this.updateHealthBar(healthComponent);
+    }
+  }
+
+  private updateHealthBar(healthComponent: HealthComponent): void {
+    const { health, initialHealth } = healthComponent;
+    const hp = (health / initialHealth) * 100;
+    this.playerHUD?.updateHealthBar(hp);
+  }
+}
