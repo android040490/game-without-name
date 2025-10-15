@@ -38,25 +38,30 @@ export class PlayerHealthSystem extends System {
     camera?.add(this.playerDamageEffect.mesh);
   }
 
-  update(): void {
+  update(elapsed: number): void {
     if (!this.entity) {
       return;
     }
 
     const healthComponent = this.entity.getComponent(HealthComponent)!;
-    const { damage } = healthComponent;
+    const { damage, health, initialHealth } = healthComponent;
+    const hp = (health / initialHealth) * 100;
 
     if (damage) {
       healthComponent.health -= damage;
       healthComponent.damage = 0;
-      this.playerDamageEffect.trigger(damage);
-      this.updateHealthBar(healthComponent);
+      this.updateHealthBar(hp);
     }
+
+    const isLowHP = hp < 10;
+    if (damage || isLowHP) {
+      this.playerDamageEffect.trigger(damage);
+    }
+
+    this.playerDamageEffect.update(elapsed);
   }
 
-  private updateHealthBar(healthComponent: HealthComponent): void {
-    const { health, initialHealth } = healthComponent;
-    const hp = (health / initialHealth) * 100;
+  private updateHealthBar(hp: number): void {
     this.playerHUD?.updateHealthBar(hp);
   }
 }

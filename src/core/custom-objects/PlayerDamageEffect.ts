@@ -36,25 +36,26 @@ export class PlayerDamageEffect {
     this.mesh = new Mesh(new PlaneGeometry(2, 2), this.material);
   }
 
-  trigger(duration = 3, intensity = 1.0) {
+  trigger(duration?: number) {
     this.material.visible = true;
+    this.intensity.value = 1;
     gsap.killTweensOf(this.intensity);
-    this.intensity.value = intensity;
 
-    gsap.to(this.intensity, {
-      value: 0,
-      duration,
-      ease: "power2.out",
-      onComplete: () => {
-        this.material.visible = false;
-      },
-    });
+    if (duration) {
+      gsap.to(this.intensity, {
+        value: 0,
+        duration,
+        ease: "power2.out",
+        onComplete: () => {
+          this.material.visible = false;
+        },
+      });
+    }
+  }
 
-    gsap.killTweensOf(this.time);
-    gsap.fromTo(
-      this.time,
-      { value: 0 },
-      { value: duration * 1.5, duration, ease: "none" },
-    );
+  update(time: number): void {
+    if (this.material.visible) {
+      this.time.value = time;
+    }
   }
 }

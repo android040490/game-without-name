@@ -53,7 +53,7 @@ export class Game {
     this.resourcesManager = new ResourcesManager();
     this.cameraManager = new CameraManager(this);
     this.renderer = new Renderer(this);
-    this.systemManager = new SystemManager();
+    this.systemManager = new SystemManager(this);
     this.entityManager = new EntityManager();
     this.physicsManager = new PhysicsManager();
     this.levelManager = new LevelManager(this);

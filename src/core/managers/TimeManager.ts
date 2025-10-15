@@ -17,6 +17,10 @@ export class TimeManager {
     window.requestAnimationFrame(this.tick);
   }
 
+  get elapsed(): number {
+    return this._elapsed;
+  }
+
   get timeStep(): number {
     return FIXED_TIMESTEP;
   }
