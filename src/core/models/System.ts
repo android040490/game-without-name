@@ -20,7 +20,7 @@ export abstract class System {
     this.entities.delete(entity.id);
   }
 
-  update(elapsed: number): void {
+  update(_elapsed: number): void {
     // should be overridden in a specific system if necessary
   }
 

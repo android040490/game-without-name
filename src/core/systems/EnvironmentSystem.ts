@@ -26,8 +26,7 @@ export class EnvironmentSystem extends System {
     const env = entity.getComponent(EnvironmentComponent)!;
 
     this.setupLighting(env);
-    this.setupDaySky(env);
-    this.setupNightSky(env);
+    this.setupSky(env);
   }
 
   removeEntity(entity: Entity): void {
@@ -40,8 +39,6 @@ export class EnvironmentSystem extends System {
     this.renderer.scene.remove(env.ambientLight);
     this.renderer.scene.remove(env.sky);
     env.sky.dispose();
-    this.renderer.scene.remove(env.stars);
-    env.stars.dispose();
   }
 
   setupLighting(env: EnvironmentComponent) {
@@ -59,19 +56,15 @@ export class EnvironmentSystem extends System {
     this.renderer.scene.add(env.ambientLight);
   }
 
-  setupDaySky(env: EnvironmentComponent) {
+  setupSky(env: EnvironmentComponent) {
     const sunPosition = new THREE.Vector3().setFromSphericalCoords(
       1,
       env.sunPhi,
       env.sunTheta,
     );
     env.sky.material.uniforms.sunPosition.value = sunPosition;
+    env.sky.rotateZ(Math.PI * 0.5);
     this.renderer.scene.add(env.sky);
-  }
-
-  setupNightSky(env: EnvironmentComponent) {
-    env.stars.rotateZ(Math.PI * 0.5);
-    this.renderer.scene.add(env.stars);
   }
 
   update() {
@@ -95,15 +88,15 @@ export class EnvironmentSystem extends System {
         -0.2,
         0.1,
       );
-      const skyOpacity = THREE.MathUtils.smoothstep(sunCosine, -0.5, 0.2);
-
-      const starsOpacity = (1 - skyOpacity) * 2;
-
-      env.stars.material.uniforms.uOpacity.value = starsOpacity;
+      const uDayNightMixFactor = THREE.MathUtils.smoothstep(
+        sunCosine,
+        -0.5,
+        0.3,
+      );
 
       env.sunLight.intensity = 4 * sunLightIntensity;
       env.sky.material.uniforms.sunPosition.value = sunPosition;
-      env.sky.material.uniforms.uOpacity.value = skyOpacity;
+      env.sky.material.uniforms.uDayNightMixFactor.value = uDayNightMixFactor;
     }
   }
 }

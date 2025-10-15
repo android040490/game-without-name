@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import Sky from "../custom-objects/Sky";
-import Stars from "../custom-objects/Stars";
 
 interface EnvironmentConfig {
   sunLightColor?: string;
@@ -15,7 +14,6 @@ export class EnvironmentComponent {
   public sunLight: THREE.DirectionalLight;
   public ambientLight: THREE.AmbientLight;
   public sky: Sky;
-  public stars: Stars;
   public sunPhi: number;
   public sunTheta: number;
 
@@ -37,7 +35,6 @@ export class EnvironmentComponent {
       ambientLightIntensity,
     );
     this.sky = new Sky();
-    this.stars = new Stars();
     this.sunPhi = sunPhi;
     this.sunTheta = sunTheta;
   }
