@@ -1,11 +1,5 @@
 import gsap from "gsap";
-import {
-  AdditiveBlending,
-  Mesh,
-  PlaneGeometry,
-  ShaderMaterial,
-  Uniform,
-} from "three";
+import { Mesh, PlaneGeometry, ShaderMaterial, Uniform } from "three";
 import vertexShader from "../shaders/damage-effect/vertex.glsl";
 import fragmentShader from "../shaders/damage-effect/fragment.glsl";
 
@@ -25,9 +19,7 @@ export class PlayerDamageEffect {
         uIntensity: this.intensity,
       },
       transparent: true,
-      depthTest: false,
       depthWrite: false,
-      blending: AdditiveBlending,
       visible: false,
       vertexShader,
       fragmentShader,
