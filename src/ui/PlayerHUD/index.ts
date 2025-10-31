@@ -16,8 +16,11 @@ export class PlayerHUD extends HTMLElement {
     this.className = classes.playerHud;
 
     this.innerHTML = `
-        <div class="${classes.healthBar}">
-            <div id="health-fill" class="${classes.healthFill}"></div>
+        <div class="${classes.healthBarWrapper}">
+            <img src="icons/medical-symbol.png"/>
+            <div class="${classes.healthBar}">
+                <div id="health-fill" class="${classes.healthFill}"></div>
+            </div>
         </div>
     `;
   }
