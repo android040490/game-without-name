@@ -1,9 +1,9 @@
 export class HealthComponent {
   public damage = 0;
   public isDead = false;
-  public health: number;
+  public hp: number;
 
   constructor(public readonly initialHealth: number) {
-    this.health = initialHealth;
+    this.hp = initialHealth;
   }
 }

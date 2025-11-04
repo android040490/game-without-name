@@ -151,11 +151,11 @@ export class ResourcesManager {
     return Promise.all(paths.map((path) => this.loadAudio(path)));
   }
 
-  getAudio(path: SoundAsset): AudioBuffer | undefined {
+  async getAudio(path: SoundAsset): Promise<AudioBuffer | undefined> {
     const audio = this.audioCache.get(path);
     if (!audio) {
       console.log(`Audio not found in cache, start loading: ${path}`);
-      this.loadAudio(path);
+      return this.loadAudio(path);
     }
     return audio;
   }

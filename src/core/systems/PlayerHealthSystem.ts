@@ -2,7 +2,10 @@ import { PlayerHUD } from "../../ui/PlayerHUD";
 import { CameraComponent } from "../components/CameraComponent";
 import { HealthComponent } from "../components/HealthComponent";
 import { PlayerComponent } from "../components/PlayerComponent";
+import { SoundAsset } from "../constants/Sounds";
 import { PlayerDamageEffect } from "../custom-objects/PlayerDamageEffect";
+import { EventBus } from "../event/EventBus";
+import { PlaySound } from "../event/PlaySound";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
@@ -11,12 +14,15 @@ export class PlayerHealthSystem extends System {
   private entity?: Entity;
   private playerHUD: PlayerHUD | null;
   private playerDamageEffect: PlayerDamageEffect;
+  private eventBus: EventBus;
+  private readonly lowHPThreshold: number = 10;
 
   constructor(game: Game) {
     super(game);
 
     this.playerHUD = document.querySelector("player-hud");
     this.playerDamageEffect = new PlayerDamageEffect();
+    this.eventBus = game.eventBus;
   }
 
   appliesTo(entity: Entity): boolean {
@@ -44,16 +50,21 @@ export class PlayerHealthSystem extends System {
     }
 
     const healthComponent = this.entity.getComponent(HealthComponent)!;
-    const { damage, health, initialHealth } = healthComponent;
-    const hp = (health / initialHealth) * 100;
+    const { damage } = healthComponent;
 
     if (damage) {
-      healthComponent.health -= damage;
+      healthComponent.hp -= damage;
       healthComponent.damage = 0;
-      this.updateHealthBar(hp);
+      this.updateHealthBar(healthComponent.hp);
     }
 
-    const isLowHP = hp < 10;
+    const isLowHP = healthComponent.hp < this.lowHPThreshold;
+    if (damage && isLowHP) {
+      this.eventBus.emit(
+        new PlaySound(this.entity, SoundAsset.HeartBeat, true),
+      );
+    }
+
     if (damage || isLowHP) {
       this.playerDamageEffect.trigger(damage);
     }

@@ -116,7 +116,7 @@ export class PlayerFactorySystem extends System {
         PlayerMovementState.Idle,
         PlayerActionState.None,
       ),
-      new HealthComponent(60),
+      new HealthComponent(100),
     );
 
     entity.addComponents(components);
