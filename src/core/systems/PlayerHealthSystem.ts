@@ -1,3 +1,4 @@
+import gsap from "gsap";
 import { PlayerHUD } from "../../ui/PlayerHUD";
 import { CameraComponent } from "../components/CameraComponent";
 import { HealthComponent } from "../components/HealthComponent";
@@ -19,7 +20,6 @@ export class PlayerHealthSystem extends System {
 
   constructor(game: Game) {
     super(game);
-
     this.playerHUD = document.querySelector("player-hud");
     this.playerDamageEffect = new PlayerDamageEffect();
     this.eventBus = game.eventBus;
@@ -40,8 +40,11 @@ export class PlayerHealthSystem extends System {
 
     super.addEntity(entity);
     this.entity = entity;
+
     const { camera } = entity.getComponent(CameraComponent) ?? {};
-    camera?.add(this.playerDamageEffect.mesh);
+    if (camera) {
+      camera.add(this.playerDamageEffect.mesh);
+    }
   }
 
   update(elapsed: number): void {
@@ -56,6 +59,7 @@ export class PlayerHealthSystem extends System {
       healthComponent.hp -= damage;
       healthComponent.damage = 0;
       this.updateHealthBar(healthComponent.hp);
+      this.shakeCamera(0.4, 0.5);
     }
 
     const isLowHP = healthComponent.hp < this.lowHPThreshold;
@@ -74,5 +78,28 @@ export class PlayerHealthSystem extends System {
 
   private updateHealthBar(hp: number): void {
     this.playerHUD?.updateHealthBar(hp);
+  }
+
+  private shakeCamera(intensity: number, duration: number): void {
+    const camera = this.entity?.getComponent(CameraComponent)?.camera;
+    if (!camera) return;
+
+    gsap.killTweensOf(camera.rotation);
+
+    const timeline = gsap.timeline();
+
+    timeline.to(camera.rotation, {
+      x: (Math.random() - 0.5) * intensity,
+      y: (Math.random() - 0.5) * intensity,
+      duration: duration * 0.5,
+      ease: "elastic.out",
+    });
+
+    timeline.to(camera.rotation, {
+      x: 0,
+      y: 0,
+      duration: duration * 0.5,
+      ease: "power2.inOut",
+    });
   }
 }
