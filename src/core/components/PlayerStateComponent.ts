@@ -3,6 +3,7 @@ export enum PlayerMovementState {
   Walk = "Walk",
   Run = "Run",
   Airborne = "Airborne",
+  Dead = "Dead",
 }
 
 export enum PlayerActionState {
@@ -20,6 +21,7 @@ export enum PlayerTransitionEvent {
   Finished = "finished",
   InAir = "inAir",
   Land = "land",
+  Dying = "dying",
 }
 
 export class PlayerStateComponent {
@@ -31,20 +33,25 @@ export class PlayerStateComponent {
       move: PlayerMovementState.Walk,
       run: PlayerMovementState.Run,
       inAir: PlayerMovementState.Airborne,
+      dying: PlayerMovementState.Dead,
     },
     [PlayerMovementState.Walk]: {
       stop: PlayerMovementState.Idle,
       run: PlayerMovementState.Run,
       inAir: PlayerMovementState.Airborne,
+      dying: PlayerMovementState.Dead,
     },
     [PlayerMovementState.Run]: {
       stop: PlayerMovementState.Idle,
       move: PlayerMovementState.Walk,
       inAir: PlayerMovementState.Airborne,
+      dying: PlayerMovementState.Dead,
     },
     [PlayerMovementState.Airborne]: {
       land: PlayerMovementState.Idle,
+      dying: PlayerMovementState.Dead,
     },
+    [PlayerMovementState.Dead]: {},
   };
 
   public actionTransitions: Record<

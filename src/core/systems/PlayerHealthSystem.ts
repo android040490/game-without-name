@@ -10,13 +10,17 @@ import { PlaySound } from "../event/PlaySound";
 import { Game } from "../Game";
 import { Entity } from "../models/Entity";
 import { System } from "../models/System";
+import { MeshComponent } from "../components/MeshComponent";
+import { PlayerMovementStateTransition } from "../event/PlayerMovementStateTransition";
+import { PlayerTransitionEvent } from "../components/PlayerStateComponent";
+import { StopSound } from "../event/StopSound";
 
 export class PlayerHealthSystem extends System {
   private entity?: Entity;
   private playerHUD: PlayerHUD | null;
   private playerDamageEffect: PlayerDamageEffect;
   private eventBus: EventBus;
-  private readonly lowHPThreshold: number = 10;
+  private readonly lowHPThreshold: number = 15;
 
   constructor(game: Game) {
     super(game);
@@ -53,12 +57,23 @@ export class PlayerHealthSystem extends System {
     }
 
     const healthComponent = this.entity.getComponent(HealthComponent)!;
-    const { damage } = healthComponent;
+    const { damage, isDead } = healthComponent;
+
+    if (isDead) {
+      return;
+    }
 
     if (damage) {
-      healthComponent.hp -= damage;
+      healthComponent.hp = Math.max(0, healthComponent.hp - damage);
       healthComponent.damage = 0;
       this.updateHealthBar(healthComponent.hp);
+
+      if (healthComponent.hp === 0) {
+        healthComponent.isDead = true;
+        this.handlePlayerDeath();
+        return;
+      }
+
       this.shakeCamera(0.4, 0.5);
     }
 
@@ -67,10 +82,18 @@ export class PlayerHealthSystem extends System {
       this.eventBus.emit(
         new PlaySound(this.entity, SoundAsset.HeartBeat, true),
       );
-    }
-
-    if (damage || isLowHP) {
-      this.playerDamageEffect.trigger(damage);
+      this.playerDamageEffect.trigger({
+        fromIntensity: 0.8,
+        toIntensity: 0,
+        vignetteRadius: 0.6,
+      });
+    } else if (damage) {
+      this.playerDamageEffect.trigger({
+        duration: 3,
+        fromIntensity: 1,
+        toIntensity: 0,
+        vignetteRadius: 0.6,
+      });
     }
 
     this.playerDamageEffect.update(elapsed);
@@ -100,6 +123,51 @@ export class PlayerHealthSystem extends System {
       y: 0,
       duration: duration * 0.5,
       ease: "power2.inOut",
+    });
+  }
+
+  private handlePlayerDeath(): void {
+    const { camera } = this.entity?.getComponent(CameraComponent) ?? {};
+    const player = this.entity;
+
+    if (!camera || !player) return;
+
+    this.eventBus.emit(
+      new PlayerMovementStateTransition(player, PlayerTransitionEvent.Dying),
+    );
+    this.eventBus.emit(new StopSound(player, SoundAsset.HeartBeat));
+    this.eventBus.emit(new PlaySound(player, SoundAsset.PlayerDeath));
+
+    const armsHolder = player
+      ?.getComponent(MeshComponent)
+      ?.object.getObjectByName("ArmsHolder");
+
+    if (armsHolder) {
+      gsap.to(armsHolder.rotation, {
+        x: -Math.PI / 2,
+        duration: 1.5,
+        ease: "power3.in",
+      });
+
+      gsap.to(armsHolder.position, {
+        y: camera.position.y - 0.5,
+        duration: 1.5,
+        ease: "power3.in",
+      });
+    }
+
+    gsap.to(camera.rotation, {
+      y: Math.PI / 2,
+      duration: 1.5,
+      ease: "power3.in",
+    });
+
+    this.playerDamageEffect.trigger({
+      fromIntensity: 0,
+      toIntensity: 0.8,
+      vignetteRadius: 0,
+      duration: 3,
+      hideOnComplete: false,
     });
   }
 }

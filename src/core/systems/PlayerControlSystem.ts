@@ -27,6 +27,7 @@ import {
 import { EventBus } from "../event/EventBus";
 import { PlayerMovementStateTransition } from "../event/PlayerMovementStateTransition";
 import { PlayerTransitionEvent } from "../components/PlayerStateComponent";
+import { HealthComponent } from "../components/HealthComponent";
 
 export class PlayerControlSystem extends System {
   private readonly eventBus: EventBus;
@@ -98,6 +99,11 @@ export class PlayerControlSystem extends System {
     if (!this.entity) {
       return;
     }
+
+    if (this.isDead) {
+      return;
+    }
+
     const { rigidBody, collider } = this.entity.getComponent(PhysicsComponent)!;
     const { height } = this.entity.getComponent(PlayerConfigComponent)!;
     const playerControlComponent = this.entity.getComponent(
@@ -132,7 +138,7 @@ export class PlayerControlSystem extends System {
     const { rigidBody } = this.entity?.getComponent(PhysicsComponent) ?? {};
     const { onGround } = this.entity?.getComponent(PlayerControlComponent)!;
 
-    if (!rigidBody || !onGround) {
+    if (!rigidBody || !onGround || this.isDead) {
       return;
     }
 
@@ -276,6 +282,10 @@ export class PlayerControlSystem extends System {
   }
 
   private fire(): void {
+    if (this.isDead) {
+      return;
+    }
+
     const weapon = this.entity?.getComponent(WeaponComponent);
     const stateComponent = this.entity?.getComponent(PlayerStateComponent);
     if (!weapon) {
@@ -310,5 +320,10 @@ export class PlayerControlSystem extends System {
     playerControlComponent.speed = event.value
       ? playerControlComponent.maxSpeed
       : playerControlComponent.minSpeed;
+  }
+
+  get isDead(): boolean {
+    const { isDead } = this.entity?.getComponent(HealthComponent) ?? {};
+    return !!isDead;
   }
 }

@@ -9,7 +9,10 @@ type Variant = Weapon;
 
 export const PlayerStateToAnimationMap: Record<
   Variant,
-  Record<PlayerMovementState, Record<PlayerActionState, PlayerAnimationData>>
+  Record<
+    PlayerMovementState,
+    Partial<Record<PlayerActionState, PlayerAnimationData>>
+  >
 > = {
   [Weapon.Remington]: {
     [PlayerMovementState.Idle]: {
@@ -32,5 +35,6 @@ export const PlayerStateToAnimationMap: Record<
       [PlayerActionState.Shoot]: PlayerAnimations.Remington_Shot,
       [PlayerActionState.Reload]: PlayerAnimations.Remington_Reload,
     },
+    [PlayerMovementState.Dead]: {},
   },
 };
