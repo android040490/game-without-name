@@ -19,4 +19,5 @@ export const PreloadSounds: SoundAsset[] = [
   SoundAsset.ZombieGroan,
   SoundAsset.ZombieScream,
   SoundAsset.ZombieDying,
+  SoundAsset.HeartBeat,
 ];
