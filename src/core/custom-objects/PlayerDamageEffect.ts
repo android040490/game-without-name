@@ -12,23 +12,17 @@ interface EffectParams {
 }
 
 export class PlayerDamageEffect {
-  private time: Uniform;
-  private intensity: Uniform;
-  private vignetteRadius: Uniform;
+  private readonly uniforms = {
+    uTime: new Uniform(0),
+    uIntensity: new Uniform(0),
+    uVignetteRadius: new Uniform(0),
+  };
   private material: ShaderMaterial;
   mesh: Mesh;
 
   constructor() {
-    this.time = new Uniform(0);
-    this.intensity = new Uniform(0);
-    this.vignetteRadius = new Uniform(0);
-
     this.material = new ShaderMaterial({
-      uniforms: {
-        uTime: this.time,
-        uIntensity: this.intensity,
-        uVignetteRadius: this.vignetteRadius,
-      },
+      uniforms: this.uniforms,
       transparent: true,
       depthWrite: false,
       visible: false,
@@ -48,11 +42,12 @@ export class PlayerDamageEffect {
       hideOnComplete = true,
     } = params;
     this.material.visible = true;
-    this.intensity.value = fromIntensity;
-    this.vignetteRadius.value = vignetteRadius;
-    gsap.killTweensOf(this.intensity);
+    const { uIntensity, uVignetteRadius } = this.uniforms;
+    uIntensity.value = fromIntensity;
+    uVignetteRadius.value = vignetteRadius;
+    gsap.killTweensOf(uIntensity);
 
-    gsap.to(this.intensity, {
+    gsap.to(uIntensity, {
       value: toIntensity,
       duration,
       ease: "power2.out",
@@ -66,7 +61,7 @@ export class PlayerDamageEffect {
 
   update(time: number): void {
     if (this.material.visible) {
-      this.time.value = time;
+      this.uniforms.uTime.value = time;
     }
   }
 }
