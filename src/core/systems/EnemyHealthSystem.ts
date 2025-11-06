@@ -37,25 +37,27 @@ export class EnemyHealthSystem extends System {
   update(): void {
     for (const [_, entity] of this.entities) {
       const healthComponent = entity.getComponent(HealthComponent)!;
-      const { health, damage, isDead } = healthComponent;
+      const { damage, isDead } = healthComponent;
 
       if (isDead) {
         continue;
       }
 
       const energyBarComponent = entity.getComponent(EnergyBarComponent);
-      if (energyBarComponent) {
-        energyBarComponent.progressBar.value = health;
-      }
-
-      if (healthComponent.health <= 0 && !isDead) {
-        healthComponent.isDead = true;
-        this.handleDead(entity);
-        continue;
-      }
 
       if (damage) {
+        healthComponent.hp -= damage;
+        healthComponent.damage = 0;
         this.handleGotDamage(entity);
+      }
+
+      if (healthComponent.hp <= 0 && !isDead) {
+        healthComponent.isDead = true;
+        this.handleDead(entity);
+      }
+
+      if (energyBarComponent) {
+        energyBarComponent.progressBar.value = healthComponent.hp;
       }
     }
   }

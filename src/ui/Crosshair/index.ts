@@ -15,7 +15,7 @@ export class Crosshair extends HTMLElement {
     this.id = "crosshair";
     this.className = classes.crosshair;
     this.innerHTML = `
-        <div class="${classes.stick} ${classes.top}"/></div>
+        <div class="${classes.stick} ${classes.top}"></div>
         <div class="${classes.stick} ${classes.bottom}"></div>
         <div class="${classes.stick} ${classes.left}"></div>
         <div class="${classes.stick} ${classes.right}"></div>

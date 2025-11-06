@@ -38,7 +38,7 @@ export const COLLISION_HANDLERS: Record<string, CollisionHandler | undefined> =
       const playerHealth = player.getComponent(HealthComponent);
 
       if (currentState === EnemyState.Attack && playerHealth) {
-        const damage = 1;
+        const damage = 5;
         playerHealth.damage += damage;
       }
     },

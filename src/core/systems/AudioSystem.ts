@@ -44,9 +44,9 @@ export class AudioSystem extends System {
     camera.add(this.listener);
   }
 
-  private playLoop(event: PlaySound) {
+  private async playLoop(event: PlaySound): Promise<void> {
     const { entity, sound } = event;
-    const buffer = this.resourcesManager.getAudio(sound);
+    const buffer = await this.resourcesManager.getAudio(sound);
     if (!buffer) {
       return;
     }
@@ -82,10 +82,10 @@ export class AudioSystem extends System {
     }
   }
 
-  private playOnce(event: PlaySound): void {
+  private async playOnce(event: PlaySound): Promise<void> {
     const { entity, sound } = event;
 
-    const buffer = this.resourcesManager.getAudio(sound);
+    const buffer = await this.resourcesManager.getAudio(sound);
     if (!buffer) return;
 
     const audio = this.createAudio(entity, buffer);
@@ -121,8 +121,8 @@ export class AudioSystem extends System {
   }
 
   // Global sound
-  setAmbientSound(name: SoundAsset) {
-    const buffer = this.resourcesManager.getAudio(name);
+  async setAmbientSound(name: SoundAsset): Promise<void> {
+    const buffer = await this.resourcesManager.getAudio(name);
     if (!buffer) return;
 
     const audio = new THREE.Audio(this.listener);

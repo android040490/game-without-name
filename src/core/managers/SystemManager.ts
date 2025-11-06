@@ -5,15 +5,19 @@ import eventBus, { EventBus } from "../event/EventBus";
 import { System } from "../models/System";
 import { Entity } from "../models/Entity";
 import { Constructor } from "../type-utils/constructor";
+import { TimeManager } from "./TimeManager";
+import { Game } from "../Game";
 
 export class SystemManager {
   private readonly eventBus: EventBus;
   private systems: System[];
+  private timeManager: TimeManager;
 
-  constructor() {
+  constructor(game: Game) {
     this.systems = [];
 
     this.eventBus = eventBus;
+    this.timeManager = game.timeManager;
 
     this.setListeners();
   }
@@ -29,7 +33,7 @@ export class SystemManager {
   update() {
     for (const system of this.systems) {
       if (system.enabled) {
-        system.update();
+        system.update(this.timeManager.elapsed);
       }
     }
   }

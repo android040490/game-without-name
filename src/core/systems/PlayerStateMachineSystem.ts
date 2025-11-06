@@ -63,9 +63,11 @@ export class PlayerStateMachineSystem extends System {
     if (next !== undefined && next !== state.movementState) {
       state.movementState = next;
 
+      // TODO: think about refactoring sound management
       if (
         next === PlayerMovementState.Airborne ||
-        next === PlayerMovementState.Idle
+        next === PlayerMovementState.Idle ||
+        next === PlayerMovementState.Dead
       ) {
         this.eventBus.emit(new StopSound(entity, SoundAsset.PlayerRunGravel));
         this.eventBus.emit(new StopSound(entity, SoundAsset.PlayerWalkGravel));
