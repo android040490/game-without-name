@@ -7,14 +7,18 @@ import { System } from "../models/System";
 import { Entity } from "../models/Entity";
 
 export class EnvironmentSystem extends System {
+  private entity?: Entity;
   private readonly timeManager: TimeManager;
   private readonly renderer: Renderer;
+  private readonly sunPosition = new THREE.Vector3();
+  private deltaPhi: number;
 
   constructor(game: Game) {
     super(game);
 
     this.renderer = game.renderer;
     this.timeManager = game.timeManager;
+    this.deltaPhi = this.timeManager.timeStep * Math.PI * 0.005;
   }
 
   appliesTo(entity: Entity): boolean {
@@ -22,7 +26,17 @@ export class EnvironmentSystem extends System {
   }
 
   async addEntity(entity: Entity) {
+    if (this.entity) {
+      console.error(
+        "EnvironmentSystem: a game cannot have more than one entity with a EnvironmentComponent. Attempting to add an entity: ",
+        entity,
+      );
+      return;
+    }
+
     super.addEntity(entity);
+    this.entity = entity;
+
     const env = entity.getComponent(EnvironmentComponent)!;
 
     this.setupLighting(env);
@@ -68,35 +82,30 @@ export class EnvironmentSystem extends System {
   }
 
   update() {
-    for (const [_, entity] of this.entities) {
-      const env = entity.getComponent(EnvironmentComponent);
-      if (!env) {
-        continue;
-      }
-      env.sunPhi -= this.timeManager.timeStep * Math.PI * 0.005;
-      const sunCosine = Math.cos(env.sunPhi);
+    const entity = this.entity;
+    if (!entity) return;
 
-      const sunPosition = new THREE.Vector3().setFromSphericalCoords(
-        1,
-        env.sunPhi,
-        env.sunTheta,
-      );
-      env.sunLight.position.copy(sunPosition.clone().multiplyScalar(50));
+    const env = entity.getComponent(EnvironmentComponent);
+    if (!env) return;
 
-      const sunLightIntensity = THREE.MathUtils.smoothstep(
-        sunCosine,
-        -0.2,
-        0.1,
-      );
-      const uDayNightMixFactor = THREE.MathUtils.smoothstep(
-        sunCosine,
-        -0.5,
-        0.3,
-      );
+    // Update sun position
+    env.sunPhi -= this.deltaPhi;
+    const sunCosine = Math.cos(env.sunPhi);
+    this.sunPosition.setFromSphericalCoords(50, env.sunPhi, env.sunTheta);
+    env.sunLight.position.copy(this.sunPosition);
 
-      env.sunLight.intensity = 4 * sunLightIntensity;
-      env.sky.material.uniforms.sunPosition.value = sunPosition;
-      env.sky.material.uniforms.uDayNightMixFactor.value = uDayNightMixFactor;
-    }
+    // Lighting intensity calculations
+    const sunLightIntensity = THREE.MathUtils.smoothstep(sunCosine, -0.2, 0.1);
+    const ambientIntensity = Math.max(0.5 * sunLightIntensity, 0.1);
+    const uDayNightMixFactor = THREE.MathUtils.smoothstep(sunCosine, -0.5, 0.3);
+
+    // Apply lighting
+    env.sunLight.intensity = 2 * sunLightIntensity;
+    env.ambientLight.intensity = ambientIntensity;
+
+    // Update sky uniforms
+    const uniforms = env.sky.material.uniforms;
+    uniforms.sunPosition.value = this.sunPosition;
+    uniforms.uDayNightMixFactor.value = uDayNightMixFactor;
   }
 }

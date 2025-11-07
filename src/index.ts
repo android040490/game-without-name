@@ -44,7 +44,7 @@ const createMesh = () => {
       colliderConfig: {
         shape: { type: "box", sizes: { x: 1, y: 2, z: 1 } },
         collisionGroups: InteractionGroups.DYNAMIC_OBJECT,
-        density: 500,
+        density: 1,
         restitution: 0,
       },
       rigidBodyConfig: {
