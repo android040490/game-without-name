@@ -57,6 +57,9 @@
   z-index: 1000;
   transition: background 0.2s;
 }
+.action-btn img {
+  width: 50%;
+}
 
 .action-btn:active {
   background: rgba(255, 255, 255, 0.6);

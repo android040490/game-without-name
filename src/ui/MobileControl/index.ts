@@ -92,8 +92,8 @@ export class MobileControl extends HTMLElement {
           <div id="stick" class="${classes.stick}"></div>
         </div>
         <div class="${classes.actionBtns}">
-          <div id="attack" class="${classes.actionBtn}">🗡️</div>
-          <div id="jump" class="${classes.actionBtn}">⬆</div>
+          <div id="attack" class="${classes.actionBtn}"><img src="icons/bullet.png"/></div>
+          <div id="jump" class="${classes.actionBtn}"><img src="icons/jumping.png"/></div>
         </div>
       </div>
     `;
