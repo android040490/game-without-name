@@ -18,6 +18,8 @@ import { AudioSystem } from "./systems/AudioSystem";
 import { SoundAsset } from "./constants/Sounds";
 import { CollisionManager } from "./managers/CollisionManager";
 import { CharacterBuilder } from "./factories/CharacterBuilder";
+import { JointManager } from "./managers/JointManager";
+import { LevelParser } from "./managers/LevelParser";
 
 let instance: Game;
 
@@ -38,6 +40,8 @@ export class Game {
   public readonly levelManager!: LevelManager;
   public readonly collisionManager!: CollisionManager;
   public readonly characterBuilder!: CharacterBuilder;
+  public readonly jointManager!: JointManager;
+  public readonly levelParser!: LevelParser;
 
   constructor(canvas: HTMLCanvasElement) {
     if (instance) {
@@ -47,6 +51,7 @@ export class Game {
     instance = this;
     // Setup
     this.canvas = canvas;
+    this.eventBus = eventBus;
     this.debugManager = new DebugManager();
     this.windowSizeManager = new WindowSizeManager();
     this.timeManager = new TimeManager();
@@ -59,7 +64,8 @@ export class Game {
     this.levelManager = new LevelManager(this);
     this.characterBuilder = new CharacterBuilder(this);
     this.collisionManager = new CollisionManager(this.physicsManager);
-    this.eventBus = eventBus;
+    this.jointManager = new JointManager(this);
+    this.levelParser = new LevelParser(this.resourcesManager);
 
     this.update = this.update.bind(this);
 
