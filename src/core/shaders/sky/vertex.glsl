@@ -12,6 +12,8 @@ varying vec3 vBetaM;
 varying float vSunE;
 varying vec2 vUv;
 
+#include <fog_pars_vertex>
+
 		// constants for atmospheric scattering
 const float e = 2.71828182845904523536028747135266249775724709369995957;
 const float pi = 3.141592653589793238462643383279502884197169;
@@ -53,7 +55,8 @@ void main()
     vec4 worldPosition = modelMatrix * vec4(position, 1.0);
     vWorldPosition = worldPosition.xyz;
 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
     gl_Position.z = gl_Position.w; // set z to camera.far
 
     vSunDirection = normalize(sunPosition);
@@ -72,4 +75,6 @@ void main()
     vBetaM = totalMie(turbidity) * mieCoefficient;
 
     vUv = uv;
+
+    #include <fog_vertex>
 }
