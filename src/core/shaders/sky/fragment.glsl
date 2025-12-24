@@ -10,6 +10,7 @@ uniform float mieDirectionalG;
 uniform vec3 up;
 uniform float uDayNightMixFactor;
 uniform sampler2D uNightTexture;
+#include <fog_pars_fragment>
 
 		// constants for atmospheric scattering
 const float pi = 3.141592653589793238462643383279502884197169;
@@ -87,5 +88,6 @@ void main()
 
 			#include <tonemapping_fragment>
 			#include <colorspace_fragment>
+            #include <fog_fragment>
 
 }

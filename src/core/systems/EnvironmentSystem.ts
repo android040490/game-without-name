@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import gsap from "gsap";
 import { TimeManager } from "../managers/TimeManager";
 import { Game } from "../Game";
 import { Renderer } from "../managers/Renderer";
@@ -11,6 +12,10 @@ export class EnvironmentSystem extends System {
   private readonly timeManager: TimeManager;
   private readonly renderer: Renderer;
   private readonly sunPosition = new THREE.Vector3();
+  private readonly dayFogColor = new THREE.Color("#babdd8");
+  private readonly nightFogColor = new THREE.Color("#313448");
+  private readonly fogColor = new THREE.Color();
+  private isFogVisible = false;
   private deltaPhi: number;
 
   constructor(game: Game) {
@@ -41,6 +46,10 @@ export class EnvironmentSystem extends System {
 
     this.setupLighting(env);
     this.setupSky(env);
+
+    this.renderer.scene.fog = new THREE.Fog(this.fogColor, 1, 1000000);
+
+    this.showFog();
   }
 
   removeEntity(entity: Entity): void {
@@ -96,16 +105,67 @@ export class EnvironmentSystem extends System {
 
     // Lighting intensity calculations
     const sunLightIntensity = THREE.MathUtils.smoothstep(sunCosine, -0.2, 0.1);
-    const ambientIntensity = Math.max(0.5 * sunLightIntensity, 0.1);
-    const uDayNightMixFactor = THREE.MathUtils.smoothstep(sunCosine, -0.5, 0.3);
+    const ambientIntensity = Math.max(1 * sunLightIntensity, 0.1);
 
+    const uDayNightMixFactor = THREE.MathUtils.smoothstep(sunCosine, -0.5, 0.3);
     // Apply lighting
-    env.sunLight.intensity = 2 * sunLightIntensity;
+    env.sunLight.intensity = 4 * sunLightIntensity;
     env.ambientLight.intensity = ambientIntensity;
 
     // Update sky uniforms
     const uniforms = env.sky.material.uniforms;
     uniforms.sunPosition.value = this.sunPosition;
     uniforms.uDayNightMixFactor.value = uDayNightMixFactor;
+
+    if (this.isFogVisible && this.renderer.scene.fog) {
+      this.fogColor.lerpColors(
+        this.nightFogColor,
+        this.dayFogColor,
+        sunLightIntensity,
+      );
+      this.renderer.scene.fog.color = this.fogColor;
+    }
+  }
+
+  showFog(): void {
+    this.isFogVisible = true;
+    const timeline = gsap.timeline();
+
+    timeline.to(this.renderer.scene.fog as THREE.Fog, {
+      far: 500,
+      duration: 10,
+      ease: "expo.in",
+    });
+    timeline.to(this.renderer.scene.fog as THREE.Fog, {
+      far: 40,
+      duration: 10,
+      ease: "expo.out",
+      onComplete: () => {
+        setTimeout(() => {
+          this.hideFog();
+        }, Math.random() * 180000 + 180000);
+      },
+    });
+  }
+
+  hideFog(): void {
+    const timeline = gsap.timeline();
+
+    timeline.to(this.renderer.scene.fog as THREE.Fog, {
+      far: 500,
+      duration: 30,
+      ease: "expo.in",
+    });
+    timeline.to(this.renderer.scene.fog as THREE.Fog, {
+      far: 1000000,
+      duration: 10,
+      ease: "power2.out",
+      onComplete: () => {
+        this.isFogVisible = false;
+        setTimeout(() => {
+          this.showFog();
+        }, Math.random() * 180000 + 300000);
+      },
+    });
   }
 }

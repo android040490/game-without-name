@@ -19,11 +19,11 @@ export class EnvironmentComponent {
 
   constructor(config?: EnvironmentConfig) {
     const {
-      sunLightColor = "#ffffff",
+      sunLightColor = "#fcf25fff",
       sunLightIntensity = 4,
       sunPhi = Math.PI / 3,
       sunTheta = Math.PI / 4,
-      ambientLightColor = "#ffffff",
+      ambientLightColor = "#fcf25fff",
       ambientLightIntensity = 0.2,
     } = config ?? {};
     this.sunLight = new THREE.DirectionalLight(
